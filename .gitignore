@@ -1,0 +1,3 @@
+*.pyc
+sbm.csv
+__pycache__/
