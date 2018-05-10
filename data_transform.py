@@ -7,6 +7,7 @@ import pandas as pd
 from multiprocessing import Pool
 from config import *
 
+
 def get_wavelist():
     train_dir = '../audio_train'
     test_dir = '../audio_test'
@@ -98,7 +99,8 @@ def tsfm_logmel(row):
 
 
 if __name__ == '__main__':
+    make_dirs()
     config = Config(sampling_rate=22050, n_mels=64, frame_weigth=40, frame_shift=10)
     # get_wavelist()
-    # wav_to_pickle_parallel('wavelist.csv')
-    wav_to_logmel('wavelist.csv')
+    wav_to_pickle_parallel('wavelist.csv')
+    # wav_to_logmel('wavelist.csv')
