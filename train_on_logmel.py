@@ -75,7 +75,7 @@ def main():
         cudnn.benchmark = True
 
         train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, foldNum)
-        val_on_fold(model, criterion, val_loader, foldNum)
+        # val_on_fold(model, criterion, val_loader, foldNum)
 
         time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time()-end))
         logging.info("--------------Time on fold {}: {}--------------\n"

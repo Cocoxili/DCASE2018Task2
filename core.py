@@ -19,7 +19,7 @@ def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config,
         train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch)
 
         # evaluate on validation set
-        prec1, prec3 = val_on_fold(model, criterion, val_loader, fold)
+        prec1, prec3 = val_on_fold(model, criterion, val_loader, config, fold)
 
         # remember best prec@1 and save checkpoint
         is_best = prec1 > best_prec1
@@ -85,7 +85,7 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
                 data_time=data_time, loss=losses, top1=top1, top3=top3))
 
 
-def val_on_fold(model, criterion, val_loader, fold):
+def val_on_fold(model, criterion, val_loader, config, fold):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
