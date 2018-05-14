@@ -5,7 +5,7 @@ from torch.optim import lr_scheduler
 
 
 
-def train_on_fold(model, criterion, optimizer, train_loader, val_loader, fold):
+def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, fold):
     model.train()
 
     best_prec1 = 0
@@ -16,7 +16,7 @@ def train_on_fold(model, criterion, optimizer, train_loader, val_loader, fold):
         exp_lr_scheduler.step()
 
         # train for one epoch
-        train_one_epoch(train_loader, model, criterion, optimizer, fold, epoch)
+        train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch)
 
         # evaluate on validation set
         prec1, prec3 = val_on_fold(model, criterion, val_loader, fold)
@@ -34,7 +34,7 @@ def train_on_fold(model, criterion, optimizer, train_loader, val_loader, fold):
         }, is_best, fold)
 
 
-def train_one_epoch(train_loader, model, criterion, optimizer, fold, epoch):
+def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()

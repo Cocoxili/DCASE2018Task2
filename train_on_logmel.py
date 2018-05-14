@@ -1,4 +1,6 @@
 from core import *
+from data_loader import *
+from util import *
 
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
@@ -7,8 +9,6 @@ import time
 
 
 def main():
-
-    make_dirs()
 
     train = pd.read_csv('../train.csv')
 
@@ -74,7 +74,7 @@ def main():
 
         cudnn.benchmark = True
 
-        train_on_fold(model, criterion, optimizer, train_loader, val_loader, foldNum)
+        train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, foldNum)
         val_on_fold(model, criterion, val_loader, foldNum)
 
         time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time()-end))
