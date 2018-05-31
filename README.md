@@ -14,18 +14,28 @@ torchvision 0.2.1
 
 ### Run:
 
-修改config.py
+实例化 Config 类, 设置参数.
 
-python data_transform.py
+data_transform.py 用来转化训练数据.
+例如将.wav文件转换为numpy格式存储,重采样,提取logmel特征,提取MFCC特征等.
 
-python train_on_logmel.py (利用logmel特征训练)
+train_on_logmel.py
+利用logmel特征训练. (利用MFCC特征训练也是这个文件,需要更改config中的输入特征,
+data_dir)
+
+train_on_wave.py
+利用波形特征训练.
+(与train_on_logmel.py的主要区别在于DataLoader类和优化器optimizer的选取)
 
 
-### 还可以做的:
+### 一些小问题
 
-清洗数据,数据集中有一些数据是空的.
+测试集中有三个文件是空的,处理数据的时候需要注意:
 
-提前将logmel特征提取出来,加速训练.
+b39975f5.wav
 
-利用一维卷积从wave提特征.
+0b0427e2.wav
 
+6ea0099f.wav
+
+目前的做法是将数据填0.
