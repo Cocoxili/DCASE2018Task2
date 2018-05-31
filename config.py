@@ -10,7 +10,8 @@ class Config(object):
                  batch_size=64,
                  momentum=0.9, weight_decay=0.0005,
                  n_folds=5, lr=0.01,
-                 n_mels=64, frame_weigth=40, frame_shift=10):
+                 n_mels=64, frame_weigth=40, frame_shift=10,
+                 debug=False):
 
         self.labels = ['Hi-hat', 'Saxophone', 'Trumpet', 'Glockenspiel', 'Cello', 'Knock',
                         'Gunshot_or_gunfire', 'Clarinet', 'Computer_keyboard', 'Keys_jangling',
@@ -41,9 +42,12 @@ class Config(object):
 
         self.n_fft = int(frame_weigth / 1000 * sampling_rate)
         self.n_mels = n_mels
+        self.frame_weigth = frame_weigth
+        self.frame_shift = frame_shift
         self.hop_length = int(frame_shift / 1000 * sampling_rate)
+
+        self.debug = debug
+
 
 if __name__ == "__main__":
     config = Config()
-    print(config.momentum, type(config.momentum))
-    print(config.weight_decay, type(config.weight_decay))

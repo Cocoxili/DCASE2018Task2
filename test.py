@@ -26,9 +26,15 @@ config = Config()
 # logmel = np.pad(logmel, ((0, 0),(0, 4)), "constant")
 # print(logmel)
 
-data, _ = librosa.load('../audio_test/0b0427e2.wav', config.sampling_rate)
+# data, _ = librosa.load('../audio_test/0b0427e2.wav', config.sampling_rate)
 # melspec = librosa.feature.melspectrogram(data, config.sampling_rate,
 #                                          n_fft=config.n_fft, hop_length=config.hop_length,
 #                                          n_mels=config.n_mels)
 # logmel = librosa.core.power_to_db(melspec)
-print(data.shape)
+# print(data.shape)
+
+logmel = np.ones((3, 64, 100))
+print(logmel.shape)
+logmel = np.pad(logmel, ((0, 0), (0, 0), (0, 2)), "constant")
+print(logmel.shape)
+print(logmel)

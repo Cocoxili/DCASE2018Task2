@@ -44,21 +44,16 @@ def main():
               .format(foldNum, len(train_set), len(val_set)))
 
         # define train loader and val loader
-        trainSet = Freesound(config=config, frame=train_set,
-                             transform=transforms.Compose([
-                                 ToLogMel(config),
-                                 ToTensor()
-                             ]),
+        trainSet = Freesound_logmel(config=config, frame=train_set,
+                             transform=transforms.Compose([ToTensor()]),
                              mode="train")
         train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
 
-        valSet = Freesound(config=config, frame=val_set,
-                             transform=transforms.Compose([
-                                 ToLogMel(config),
-                                 ToTensor()
-                             ]),
+        valSet = Freesound_logmel(config=config, frame=val_set,
+                             transform=transforms.Compose([ToTensor()]),
                              mode="train")
-        val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
+
+        val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
 
         model = run_method_by_string(config.arch)(pretrained=config.pretrain)
 
@@ -75,7 +70,8 @@ def main():
         cudnn.benchmark = True
 
         train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, foldNum)
-        # val_on_fold(model, criterion, val_loader, foldNum)
+
+        # val_on_file_logmel(model, config, val_set)
 
         time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time()-end))
         logging.info("--------------Time on fold {}: {}--------------\n"
@@ -84,10 +80,15 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
     DEBUG = False
 
-    config = Config(arch='resnet101_m',
+    config = Config(sampling_rate=22050,
+                    audio_duration=1.5,
+                    n_folds=5,
+                    data_dir="../mfcc+delta_w80_s10_m64",
+                    arch='resnet50_mfcc',
+                    lr=0.01,
                     pretrain=True,
                     epochs=40)
 
