@@ -1,4 +1,13 @@
-*.pyc
-sbm.csv
+# Byte-compiled / optimized / DLL files                                                                    
 __pycache__/
+*.py[cod]
+*$py.class
+
+
+# submission file
+sbm.csv
+
+# pyCharm files
 .idea/
+
+
