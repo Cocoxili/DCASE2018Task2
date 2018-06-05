@@ -185,21 +185,21 @@ def predict():
     Save test predictions.
     """
     for i in range(config.n_folds):
-        ckp = '../model/mfcc+delta/model_best.' + str(i) + '.pth.tar'
+        ckp = '../model/logmel+delta/model_best.' + str(i) + '.pth.tar'
         prediction = predict_one_model_with_logmel(ckp, i)
-        torch.save(prediction, '../prediction/mfcc/prediction_'+str(i)+'.pt')
+        torch.save(prediction, '../prediction/logmel+delta/prediction_'+str(i)+'.pt')
 
 
 
 def ensemble():
     prediction_files = []
     for i in range(config.n_folds):
-        pf = '../prediction/mfcc/prediction_' + str(i) + '.pt'
+        pf = '../prediction/logmel+delta/prediction_' + str(i) + '.pt'
         prediction_files.append(pf)
 
-    # for i in range(config.n_folds):
-    #     pf = '../prediction/wave1d/prediction_' + str(i) + '.pt'
-    #     prediction_files.append(pf)
+    for i in range(config.n_folds):
+        pf = '../prediction/mfcc+delta/prediction_' + str(i) + '.pt'
+        prediction_files.append(pf)
 
     pred_list = []
     for pf in prediction_files:
@@ -208,8 +208,13 @@ def ensemble():
     # prediction = np.ones_like(pred_list[0])
     prediction = torch.ones_like(pred_list[0]).cuda()
     for pred in pred_list:
-        prediction = prediction * pred
-    prediction = prediction ** (1. / len(pred_list))
+        # geometric average
+        # prediction = prediction * pred
+        # arithmetic average
+        prediction = prediction + pred
+
+    # prediction = prediction ** (1. / len(pred_list))
+    prediction = prediction / len(pred_list)
 
     return prediction
 
@@ -227,17 +232,41 @@ def make_a_submission_file(prediction):
     print('Result saved as %s' % result_path)
 
 
+def test():
+    prediction_files = []
+    for i in range(config.n_folds):
+        pf = '../prediction/logmel+delta/prediction_' + str(i) + '.pt'
+        prediction_files.append(pf)
+
+    pred_list = []
+    for pf in prediction_files:
+        pred_list.append(torch.load(pf))
+
+    # prediction = np.ones_like(pred_list[0])
+    prediction = torch.ones_like(pred_list[0]).cuda()
+    for pred in pred_list:
+
+        print(pred.size())
+        print(pred[0].size())
+        print(pred[0])
+        print(torch.sum(pred[0]))
+        print(torch.max(pred[0]))
+        break
+
+
 if __name__ == "__main__":
 
     config = Config(sampling_rate=22050,
                     audio_duration=1.5,
                     n_folds=5,
-                    data_dir="../mfcc+delta_w80_s10_m64",
+                    data_dir="../logmel+delta_w80_s10_m64",
                     arch='resnet50_logmel',
                     lr=0.01,
                     pretrain=True,
                     epochs=40)
 
     # predict()
-    prediction = ensemble()
-    make_a_submission_file(prediction)
+    # prediction = ensemble()
+    # make_a_submission_file(prediction)
+
+    test()

@@ -110,10 +110,10 @@ def accuracy(output, target, topk=(1,)):
         return res
 
 
-def save_checkpoint(state, is_best, fold, filename='../model/MTOresnet/checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, fold, filename='../model/checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        best_name = '../model/MTOresnet/model_best.' + str(fold) + '.pth.tar'
+        best_name = '../model/model_best.' + str(fold) + '.pth.tar'
         shutil.copyfile(filename, best_name)
 
     # def make_submission():

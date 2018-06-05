@@ -80,13 +80,13 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
     DEBUG = False
 
     config = Config(sampling_rate=22050,
                     audio_duration=1.5,
                     n_folds=5,
-                    data_dir="../mfcc+delta_w80_s10_m64",
+                    data_dir="../logmel+delta_w80_s10_m64",
                     arch='resnet50_mfcc',
                     lr=0.01,
                     pretrain=True,

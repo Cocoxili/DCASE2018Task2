@@ -245,11 +245,13 @@ if __name__ == "__main__":
         testSet = Freesound_logmel(config=config, frame=test_set,
                                    # transform=transforms.Compose([ToTensor()]),
                                    mode="test")
-        test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=1)
+        test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
         print(len(test_loader))
         for i, input in enumerate(test_loader):
-            print(i)
-            print(input)
-            print(input.size())
-            print(input.type())
-            break
+            if i == len((test_loader))-1:
+                # print(i)
+                print(input)
+            # print(input)
+                print(input.size())
+            # print(input.type())
+            # break
