@@ -31,62 +31,95 @@ def main():
         train = train[:500]
 
     skf = StratifiedKFold(n_splits=config.n_folds)
+    #
+    # for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
+    #
+    #     end = time.time()
+    #     # split the dataset for cross-validation
+    #     train_set = train.iloc[train_split]
+    #     train_set = train_set.reset_index(drop=True)
+    #     val_set = train.iloc[val_split]
+    #     val_set = val_set.reset_index(drop=True)
+    #     logging.info("Fold {0}, Train samples:{1}, val samples:{2}"
+    #           .format(foldNum, len(train_set), len(val_set)))
+    #
+    #     # define train loader and val loader
+    #     trainSet = Freesound_logmel(config=config, frame=train_set,
+    #                          transform=transforms.Compose([ToTensor()]),
+    #                          mode="train")
+    #     train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
+    #
+    #     valSet = Freesound_logmel(config=config, frame=val_set,
+    #                          transform=transforms.Compose([ToTensor()]),
+    #                          mode="train")
+    #
+    #     val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+    #
+    #     model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    #
+    #
+    #     if config.cuda:
+    #         model.cuda()
+    #
+    #     # define loss function (criterion) and optimizer
+    #     criterion = nn.CrossEntropyLoss().cuda()
+    #
+    #     optimizer = optim.SGD(model.parameters(), lr=config.lr,
+    #                           momentum=config.momentum,
+    #                           weight_decay=config.weight_decay)
+    #
+    #     cudnn.benchmark = True
+    #
+    #     train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, foldNum)
+    #
+    #     # val_on_file_logmel(model, config, val_set)
+    #
+    #     time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time()-end))
+    #     logging.info("--------------Time on fold {}: {}--------------\n"
+    #           .format(foldNum, time_on_fold))
 
-    for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
+    # train on the whole training set
+    foldNum = config.n_folds + 1
+    end = time.time()
+    logging.info("Fold {0}, Train samples:{1}."
+                 .format(foldNum, len(train)))
 
-        end = time.time()
-        # split the dataset for cross-validation
-        train_set = train.iloc[train_split]
-        train_set = train_set.reset_index(drop=True)
-        val_set = train.iloc[val_split]
-        val_set = val_set.reset_index(drop=True)
-        logging.info("Fold {0}, Train samples:{1}, val samples:{2}"
-              .format(foldNum, len(train_set), len(val_set)))
+    # define train loader and val loader
+    trainSet = Freesound_logmel(config=config, frame=train,
+                                transform=transforms.Compose([ToTensor()]),
+                                mode="train")
+    train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
 
-        # define train loader and val loader
-        trainSet = Freesound_logmel(config=config, frame=train_set,
-                             transform=transforms.Compose([ToTensor()]),
-                             mode="train")
-        train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
+    model = run_method_by_string(config.arch)(pretrained=config.pretrain)
 
-        valSet = Freesound_logmel(config=config, frame=val_set,
-                             transform=transforms.Compose([ToTensor()]),
-                             mode="train")
+    if config.cuda:
+        model.cuda()
 
-        val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+    # define loss function (criterion) and optimizer
+    criterion = nn.CrossEntropyLoss().cuda()
 
-        model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    optimizer = optim.SGD(model.parameters(), lr=config.lr,
+                          momentum=config.momentum,
+                          weight_decay=config.weight_decay)
 
-        if config.cuda:
-            model.cuda()
+    cudnn.benchmark = True
 
-        # define loss function (criterion) and optimizer
-        criterion = nn.CrossEntropyLoss().cuda()
+    train_all_data(model, criterion, optimizer, train_loader, config, foldNum)
 
-        optimizer = optim.SGD(model.parameters(), lr=config.lr,
-                              momentum=config.momentum,
-                              weight_decay=config.weight_decay)
-
-        cudnn.benchmark = True
-
-        train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, foldNum)
-
-        # val_on_file_logmel(model, config, val_set)
-
-        time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time()-end))
-        logging.info("--------------Time on fold {}: {}--------------\n"
-              .format(foldNum, time_on_fold))
+    time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time() - end))
+    logging.info("--------------Time on fold {}: {}--------------\n"
+                 .format(foldNum, time_on_fold))
 
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
     DEBUG = False
 
     config = Config(sampling_rate=22050,
                     audio_duration=1.5,
                     n_folds=5,
-                    data_dir="../logmel+delta_w80_s10_m64",
+                    data_dir="../mfcc+delta_w80_s10_m64",
                     arch='resnet50_mfcc',
                     lr=0.01,
                     pretrain=True,

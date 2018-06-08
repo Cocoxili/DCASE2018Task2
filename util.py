@@ -6,8 +6,9 @@ import librosa
 import logging
 import os
 from network import *
-# from waveResnet import *
-from MTO_network import *
+from waveResnet import *
+# from MTO_network import *
+
 
 def save_data(filename, data):
     """Save variable into a pickle file

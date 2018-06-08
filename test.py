@@ -5,6 +5,8 @@ from config import *
 import os
 from network import *
 import numpy as np
+from torchvision import models
+
 
 config = Config()
 # attrs = '\n'.join('%s:%s'%item for item in vars(config).items())
@@ -33,8 +35,20 @@ config = Config()
 # logmel = librosa.core.power_to_db(melspec)
 # print(data.shape)
 
-logmel = np.ones((3, 64, 100))
-print(logmel.shape)
-logmel = np.pad(logmel, ((0, 0), (0, 0), (0, 2)), "constant")
-print(logmel.shape)
-print(logmel)
+# logmel = np.ones((3, 64, 100))
+# print(logmel.shape)
+# logmel = np.pad(logmel, ((0, 0), (0, 0), (0, 2)), "constant")
+# print(logmel.shape)
+# print(logmel)
+
+# from sklearn.model_selection import StratifiedKFold
+# X = np.array([0,1,2,3,4])
+# y = np.array([0,0,0,0,0])
+# skf = StratifiedKFold(n_splits=5)
+# print(skf.get_n_splits(X, y))
+# for train, label in skf.split(X, y):
+#     print(train, label)
+
+model = models.resnet18()
+model.cuda()
+print(model)

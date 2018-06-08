@@ -3,8 +3,9 @@ from util import *
 from data_loader import *
 from network import *
 from tqdm import tqdm
+import torch.nn.functional as F
 
-def predict_one_model(checkpoint, fold):
+def predict_one_model(checkpoint, data_loader):
 
     print("=> loading checkpoint '{}'".format(checkpoint))
     checkpoint = torch.load(checkpoint)
@@ -15,23 +16,13 @@ def predict_one_model(checkpoint, fold):
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
 
-    test_set = pd.read_csv('../sample_submission.csv')
-    # test_set.set_index("fname")
-
-    # print(test_set)
-
-    testSet = Freesound_logmel(config=config, frame=test_set,
-                        transform=transforms.Compose([ToTensor()]),
-                        mode="test")
-    test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-
     if config.cuda is True:
         model.cuda()
     model.eval()
 
     prediction = torch.zeros((1, 41)).cuda()
     with torch.no_grad():
-        for input in tqdm(test_loader):
+        for input in tqdm(data_loader):
 
             if config.cuda:
                 input = input.cuda()
@@ -39,11 +30,12 @@ def predict_one_model(checkpoint, fold):
             # compute output
             # print("input size:", input.size())
             output = model(input)
+            output = F.softmax(output, dim=1)
             # print(output.size())
             # print(output.type())
             prediction = torch.cat((prediction, output), dim=0)
 
-    prediction = prediction[1:]
+    prediction = prediction[1:].cpu().numpy()
     return prediction
 
 
@@ -193,20 +185,26 @@ def predict():
 
 def ensemble():
     prediction_files = []
-    for i in range(config.n_folds):
-        pf = '../prediction/logmel+delta/prediction_' + str(i) + '.pt'
-        prediction_files.append(pf)
+    # for i in range(config.n_folds):
+    #     pf = '../prediction/logmel+delta/prediction_' + str(i) + '.pt'
+    #     prediction_files.append(pf)
 
-    for i in range(config.n_folds):
-        pf = '../prediction/mfcc+delta/prediction_' + str(i) + '.pt'
-        prediction_files.append(pf)
+    # for i in range(config.n_folds):
+    #     pf = '../prediction/mfcc+delta/prediction_' + str(i) + '.pt'
+    #     prediction_files.append(pf)
+
+    # pf = '../prediction/logmel+delta/test_predictions.npy'
+    # prediction_files.append(pf)
+
+    pf = '../prediction/logmel+delta/prediction_2.pt'
+    prediction_files.append(pf)
 
     pred_list = []
     for pf in prediction_files:
         pred_list.append(torch.load(pf))
 
+    prediction = np.zeros_like(pred_list[0])
     # prediction = np.ones_like(pred_list[0])
-    prediction = torch.ones_like(pred_list[0]).cuda()
     for pred in pred_list:
         # geometric average
         # prediction = prediction * pred
@@ -232,41 +230,113 @@ def make_a_submission_file(prediction):
     print('Result saved as %s' % result_path)
 
 
+def make_prediction_files():
+
+    model_dir = '../model/wave1d/'
+    prediction_dir = '../prediction/wave1d'
+    # make train prediction
+    train = pd.read_csv('../train.csv')
+
+    LABELS = list(train.label.unique())
+
+    label_idx = {label: i for i, label in enumerate(LABELS)}
+    train.set_index("fname")
+
+    train["label_idx"] = train.label.apply(lambda x: label_idx[x])
+
+    skf = StratifiedKFold(n_splits=config.n_folds)
+
+    predictions = np.zeros((1, 41))
+
+    for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
+        train_set = train.iloc[train_split]
+        train_set = train_set.reset_index(drop=True)
+        val_set = train.iloc[val_split]
+        val_set = val_set.reset_index(drop=True)
+        logging.info("Fold {0}, Train samples:{1}, val samples:{2}"
+              .format(foldNum, len(train_set), len(val_set)))
+
+        # define train loader and val loader
+        # valSet = Freesound_logmel(config=config, frame=val_set,
+        #                      transform=transforms.Compose([ToTensor()]),
+        #                      mode="test")
+        #
+        # val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+
+        valSet = Freesound(config=config, frame=val_set, mode="test")
+
+        val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+
+        train_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%foldNum)
+
+        predictions = np.concatenate((predictions, predict_one_model(train_model, val_loader)))
+
+    predictions = predictions[1:]
+    # print(predictions, np.sum(predictions, axis=1))
+    np.save(os.path.join(prediction_dir, 'train_predictions.npy'), predictions)
+
+    # make test prediction
+    test_set = pd.read_csv('../sample_submission.csv')
+
+    # testSet = Freesound_logmel(config=config, frame=test_set,
+    #                     transform=transforms.Compose([ToTensor()]),
+    #                     mode="test")
+    # test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+
+    testSet = Freesound(config=config, frame=test_set, mode="test")
+
+    test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+
+    test_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%(config.n_folds+1))
+
+    predictions = np.zeros((1, 41))
+    predictions = np.concatenate((predictions, predict_one_model(test_model, test_loader)))
+    predictions = predictions[1:]
+    np.save(os.path.join(prediction_dir, 'test_predictions.npy'), predictions)
+
+
 def test():
-    prediction_files = []
-    for i in range(config.n_folds):
-        pf = '../prediction/logmel+delta/prediction_' + str(i) + '.pt'
-        prediction_files.append(pf)
+    file = '../prediction/wave1d/test_predictions.npy'
+    file = np.load(file)
+    print(file.shape)
+    # index = np.zeros((file.shape[0], 1))
+    index = np.array([[i] for i in range(file.shape[0])])
+    # index = np.array([0,1,2,3])
+    # print(index.shape)
+    file = np.hstack((index, file))
+    print(file)
+    print(file.shape)
 
-    pred_list = []
-    for pf in prediction_files:
-        pred_list.append(torch.load(pf))
-
-    # prediction = np.ones_like(pred_list[0])
-    prediction = torch.ones_like(pred_list[0]).cuda()
-    for pred in pred_list:
-
-        print(pred.size())
-        print(pred[0].size())
-        print(pred[0])
-        print(torch.sum(pred[0]))
-        print(torch.max(pred[0]))
-        break
+    target_file = '../prediction_index/wave1d/test_predictions.npy'
+    np.save(target_file, file)
 
 
 if __name__ == "__main__":
 
-    config = Config(sampling_rate=22050,
-                    audio_duration=1.5,
-                    n_folds=5,
-                    data_dir="../logmel+delta_w80_s10_m64",
-                    arch='resnet50_logmel',
+    # config = Config(sampling_rate=22050,
+    #                 audio_duration=1.5,
+    #                 n_folds=5,
+    #                 data_dir="../logmel+delta_w80_s10_m64",
+    #                 arch='resnet50_logmel',
+    #                 lr=0.01,
+    #                 pretrain=True,
+    #                 epochs=40,
+    #                 debug=False)
+
+    config = Config(debug=False,
+                    sampling_rate=22050,
+                    audio_duration=2,
+                    data_dir="../data-22050",
+                    arch='waveResnet18',
                     lr=0.01,
-                    pretrain=True,
-                    epochs=40)
+                    pretrain=False,
+                    epochs=50)
 
     # predict()
     # prediction = ensemble()
     # make_a_submission_file(prediction)
 
     test()
+    # make_prediction_files()
+    # prediction = ensemble()
+    # make_a_submission_file(prediction)
