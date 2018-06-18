@@ -177,33 +177,72 @@ def predict():
     Save test predictions.
     """
     for i in range(config.n_folds):
-        ckp = '../model/logmel+delta/model_best.' + str(i) + '.pth.tar'
+        ckp = '../model/mixup_mfcc_delta/model_best.' + str(i) + '.pth.tar'
         prediction = predict_one_model_with_logmel(ckp, i)
-        torch.save(prediction, '../prediction/logmel+delta/prediction_'+str(i)+'.pt')
+        torch.save(prediction, '../prediction/mixup_mfcc_delta/prediction_'+str(i)+'.pt')
 
+
+def txt2tensor():
+    filePath = '/home/zbq/work/Kaggle/freesound-audio-tagging/prediction/lj_lcnn'
+    import glob
+    dataDictList = []
+    for files in glob.glob(os.path.join(filePath, '*.txt')):
+        f = open(files, 'r')
+        dataDict = {}
+        for id_, line in enumerate(f.readlines()):
+            line = line.split('\n')[0].strip().split()
+            data = []
+            for item in line:
+                data.append(float(item))
+            data = np.asarray(data, dtype=np.float32)
+            dataDict[id_] = data
+        dataDictList.append(dataDict)
+    # print("dataDictList: ", len(dataDictList))
+
+    dataNumpy = []
+    for id_ in range(9400):
+        dataList = []
+        for dataDict in dataDictList:
+            dataList.append(dataDict[id_])
+        data = np.asarray(dataList, dtype=np.float32)
+        data = data.mean(axis=0)
+        dataNumpy.append(data)
+
+    dataNumpy = np.asarray(dataNumpy, dtype=np.float32)
+    # print("dataNumpy: ", dataNumpy.shape)
+    # print("dataSum: ", dataNumpy[0, :])
+    dataTensor = torch.from_numpy(dataNumpy).type(torch.FloatTensor).cuda()
+    # print("dataTensor: ", dataTensor.size())
+    return dataTensor
 
 
 def ensemble():
     prediction_files = []
-    # for i in range(config.n_folds):
-    #     pf = '../prediction/logmel+delta/prediction_' + str(i) + '.pt'
-    #     prediction_files.append(pf)
+    for i in range(config.n_folds):
+        pf = '../prediction/mixup_mfcc_delta/prediction_' + str(i) + '.pt'
+        prediction_files.append(pf)
 
-    # for i in range(config.n_folds):
-    #     pf = '../prediction/mfcc+delta/prediction_' + str(i) + '.pt'
-    #     prediction_files.append(pf)
+    for i in range(config.n_folds):
+        pf = '../prediction/mixup_logmel_delta/prediction_' + str(i) + '.pt'
+        prediction_files.append(pf)
 
     # pf = '../prediction/logmel+delta/test_predictions.npy'
     # prediction_files.append(pf)
 
-    pf = '../prediction/logmel+delta/prediction_2.pt'
-    prediction_files.append(pf)
+    # pf = '../prediction/logmel+delta/prediction_2.pt'
+    # prediction_files.append(pf)
 
     pred_list = []
     for pf in prediction_files:
         pred_list.append(torch.load(pf))
 
-    prediction = np.zeros_like(pred_list[0])
+    # print(txt2tensor().type())
+    # print(pred_list[0].type())
+    # pred_list.append(txt2tensor())
+
+
+    prediction = torch.zeros_like(pred_list[0])
+    # prediction = np.zeros_like(pred_list[0])
     # prediction = np.ones_like(pred_list[0])
     for pred in pred_list:
         # geometric average
@@ -313,30 +352,31 @@ def test():
 
 if __name__ == "__main__":
 
-    # config = Config(sampling_rate=22050,
-    #                 audio_duration=1.5,
-    #                 n_folds=5,
-    #                 data_dir="../logmel+delta_w80_s10_m64",
-    #                 arch='resnet50_logmel',
-    #                 lr=0.01,
-    #                 pretrain=True,
-    #                 epochs=40,
-    #                 debug=False)
-
-    config = Config(debug=False,
-                    sampling_rate=22050,
-                    audio_duration=2,
-                    data_dir="../data-22050",
-                    arch='waveResnet18',
+    config = Config(sampling_rate=22050,
+                    audio_duration=1.5,
+                    n_folds=5,
+                    data_dir="../mfcc+delta_w80_s10_m64",
+                    arch='resnet50_logmel',
                     lr=0.01,
-                    pretrain=False,
-                    epochs=50)
+                    pretrain=True,
+                    epochs=40,
+                    debug=False)
+
+    # config = Config(debug=False,
+    #                 sampling_rate=22050,
+    #                 audio_duration=2,
+    #                 data_dir="../data-22050",
+    #                 arch='waveResnet18',
+    #                 lr=0.01,
+    #                 pretrain=False,
+    #                 epochs=50)
 
     # predict()
     # prediction = ensemble()
     # make_a_submission_file(prediction)
 
-    test()
+    # test()
     # make_prediction_files()
-    # prediction = ensemble()
-    # make_a_submission_file(prediction)
+    # tensor = txt2tensor()
+    prediction = ensemble()
+    make_a_submission_file(prediction)

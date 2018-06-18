@@ -5,7 +5,8 @@ from torch.optim import lr_scheduler
 
 
 
-def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, fold):
+def train_on_fold(model, train_criterion, val_criterion,
+                  optimizer, train_loader, val_loader, config, fold):
     model.train()
 
     best_prec1 = 0
@@ -20,10 +21,10 @@ def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config,
         exp_lr_scheduler.step()
 
         # train for one epoch
-        train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch)
+        train_one_epoch(train_loader, model, train_criterion, optimizer, config, fold, epoch)
 
         # evaluate on validation set
-        prec1, prec3 = val_on_fold(model, criterion, val_loader, config, fold)
+        prec1, prec3 = val_on_fold(model, val_criterion, val_loader, config, fold)
 
         # remember best prec@1 and save checkpoint
         if config.debug == False or True:
@@ -79,6 +80,11 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
+
+        one_hot_labels = make_one_hot(target)
+        # print("target: ", target)
+        input, target = mixup(input, one_hot_labels, alpha=3)
+
         # measure data loading time
         data_time.update(time.time() - end)
 
@@ -89,14 +95,14 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
         # print("input:", input.size(), input.type())  # ([batch_size, 1, 64, 150])
         output = model(input)
         # print("output:", output.size(), output.type())  # ([bs, 41])
-        # print("target:", target.size(), target.type())  # ([bs])
+        # print("target:", target.size(), target.type())  # ([bs, 41])
         loss = criterion(output, target)
 
         # measure accuracy and record loss
-        prec1, prec3 = accuracy(output, target, topk=(1, 3))
+        # prec1, prec3 = accuracy(output, target, topk=(1, 3))
         losses.update(loss.item(), input.size(0))
-        top1.update(prec1[0], input.size(0))
-        top3.update(prec3[0], input.size(0))
+        # top1.update(prec1[0], input.size(0))
+        # top3.update(prec3[0], input.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -111,12 +117,10 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
             logging.info('F{fold} E{epoch} lr:{lr:.4g} '
                   'Time {batch_time.val:.1f}({batch_time.avg:.1f}) '
                   'Data {data_time.val:.1f}({data_time.avg:.1f}) '
-                  'Loss {loss.avg:.2f} '
-                  'Prec@1 {top1.val:.2f}({top1.avg:.2f}) '
-                  'Prec@3 {top3.val:.2f}({top3.avg:.2f})'.format(
+                  'Loss {loss.avg:.2f} ' .format(
                 i, len(train_loader), fold=fold, epoch=epoch,
                 lr=optimizer.param_groups[0]['lr'], batch_time=batch_time,
-                data_time=data_time, loss=losses, top1=top1, top3=top3))
+                data_time=data_time, loss=losses))
 
     return top1.avg, top3.avg
 
@@ -248,7 +252,6 @@ def val_on_file_logmel(model, config, frame):
     input_frame_length = int(config.audio_duration * 1000 / config.frame_shift)
     stride = 20
 
-
     with torch.no_grad():
 
         for idx in tqdm(range(frame.shape[0])):
@@ -298,3 +301,32 @@ def val_on_file_logmel(model, config, frame):
               .format(top1=top1, top3=top3, elapse=elapse))
 
         # return top1.avg, to
+
+
+def mixup(data, one_hot_labels, alpha=1):
+    batch_size = data.size()[0]
+
+    weights = np.random.beta(alpha, alpha, batch_size)
+
+    weights = torch.from_numpy(weights).type(torch.FloatTensor)
+
+    #     print('Mixup weights', weights)
+    index = np.random.permutation(batch_size)
+    #     print(index)
+    x1, x2 = data, data[index]
+
+    x = torch.zeros_like(x1)
+    for i in range(batch_size):
+        for c in range(x.size()[1]):
+            x[i][c] = x1[i][c] * weights[i] + x2[i][c] * (1 - weights[i])
+            #     print(x)
+
+    y1 = one_hot_labels
+    y2 = one_hot_labels[index]
+
+    y = torch.zeros_like(y1)
+
+    for i in range(batch_size):
+        y[i] = y1[i] * weights[i] + y2[i] * (1 - weights[i])
+
+    return x, y

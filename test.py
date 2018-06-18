@@ -6,7 +6,7 @@ import os
 from network import *
 import numpy as np
 from torchvision import models
-
+from matplotlib import pyplot as plt
 
 config = Config()
 # attrs = '\n'.join('%s:%s'%item for item in vars(config).items())
@@ -49,6 +49,9 @@ config = Config()
 # for train, label in skf.split(X, y):
 #     print(train, label)
 
-model = models.resnet18()
-model.cuda()
-print(model)
+a = np.random.beta(3, 3, 2)
+# b = np.random.permutation(5)
+print(a)
+
+# plt.subplot(nrows=2, ncols=1, 2)
+

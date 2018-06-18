@@ -1,5 +1,4 @@
 import numpy as np
-np.random.seed(1001)
 
 import librosa
 import os
@@ -98,12 +97,12 @@ class Freesound_logmel(Dataset):
         self.transform = transform
         self.mode = mode
 
+
     def __len__(self):
         return self.frame.shape[0]
 
 
     def __getitem__(self, idx):
-
         filename = os.path.splitext(self.frame["fname"][idx])[0] + '.pkl'
 
         file_path = os.path.join(self.config.data_dir, filename)
@@ -200,9 +199,9 @@ if __name__ == "__main__":
         train = train[:2000]
         test = test[:2000]
 
-    skf = StratifiedKFold(n_splits=config.n_folds)
-
-    for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
+    # skf = StratifiedKFold(n_splits=config.n_folds)
+    #
+    # for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
         # print("TRAIN:", train_split, "VAL:", val_split)
         # train_set = train.iloc[train_split]
         # train_set = train_set.reset_index(drop=True)
@@ -240,18 +239,16 @@ if __name__ == "__main__":
         #     print(input.type())
         #     break
 
-        # ---------test logmel loader------------
-        test_set = pd.read_csv('../sample_submission.csv')
-        testSet = Freesound_logmel(config=config, frame=test_set,
-                                   # transform=transforms.Compose([ToTensor()]),
-                                   mode="test")
-        test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-        print(len(test_loader))
-        for i, input in enumerate(test_loader):
-            if i == len((test_loader))-1:
-                # print(i)
-                print(input)
-            # print(input)
-                print(input.size())
-            # print(input.type())
-            # break
+    # ---------test logmel loader------------
+    test_set = pd.read_csv('../sample_submission.csv')
+    testSet = Freesound_logmel(config=config, frame=test_set,
+                               # transform=transforms.Compose([ToTensor()]),
+                               mode="test")
+    # test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=1)
+    test_loader = DataLoader(testSet, batch_size=1, shuffle=False, num_workers=1)
+    print(len(test_loader))
+    print(type(test_loader))
+    for i, input in enumerate(test_loader):
+
+        print(input.type())
+        break

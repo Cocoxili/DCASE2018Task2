@@ -294,3 +294,4 @@ def resnet101_logmel(pretrained=False, **kwargs):
 def wave_model(pretrained=False):
     model = WaveBasedModel()
     return model
+
