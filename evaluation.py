@@ -98,7 +98,7 @@ def predict_one_model_with_wave(checkpoint, fold):
 
             output = model(data)
             output = torch.sum(output, dim=0, keepdim=True)
-
+            print(prediction.size(), output.size())
             prediction = torch.cat((prediction, output), dim=0)
 
     prediction = prediction[1:]
@@ -177,17 +177,18 @@ def predict():
     Save test predictions.
     """
     for i in range(config.n_folds):
-        ckp = '../model/logmel+delta/model_best.' + str(i) + '.pth.tar'
-        prediction = predict_one_model_with_logmel(ckp, i)
-        torch.save(prediction, '../prediction/logmel+delta/prediction_'+str(i)+'.pt')
+        ckp = '../model/MTOwaveResnet101/model_best.' + str(i) + '.pth.tar'
+        prediction = predict_one_model_with_wave(ckp, i)
+        # prediction = predict_one_model_with_logmel(ckp, i)
+        torch.save(prediction, '../prediction/MTOwaveResnet101/prediction_'+str(i)+'.pt')
 
 
 
 def ensemble():
     prediction_files = []
-    # for i in range(config.n_folds):
-    #     pf = '../prediction/logmel+delta/prediction_' + str(i) + '.pt'
-    #     prediction_files.append(pf)
+    for i in range(config.n_folds):
+        pf = '../prediction/MTOwaveResnet101/prediction_' + str(i) + '.pt'
+        prediction_files.append(pf)
 
     # for i in range(config.n_folds):
     #     pf = '../prediction/mfcc+delta/prediction_' + str(i) + '.pt'
@@ -196,14 +197,14 @@ def ensemble():
     # pf = '../prediction/logmel+delta/test_predictions.npy'
     # prediction_files.append(pf)
 
-    pf = '../prediction/logmel+delta/prediction_2.pt'
-    prediction_files.append(pf)
+    # pf = '../prediction/logmel+delta/prediction_2.pt'
+    # prediction_files.append(pf)
 
     pred_list = []
     for pf in prediction_files:
         pred_list.append(torch.load(pf))
 
-    prediction = np.zeros_like(pred_list[0])
+    prediction = torch.zeros_like(pred_list[0])
     # prediction = np.ones_like(pred_list[0])
     for pred in pred_list:
         # geometric average
@@ -324,19 +325,19 @@ if __name__ == "__main__":
     #                 debug=False)
 
     config = Config(debug=False,
-                    sampling_rate=22050,
-                    audio_duration=2,
-                    data_dir="../data-22050",
-                    arch='waveResnet18',
+                    sampling_rate=44100,
+                    audio_duration=1.5,
+                    data_dir="../data-44100",
+                    arch='MTOwaveResnet101',
                     lr=0.01,
-                    pretrain=False,
+                    pretrain=True,
                     epochs=50)
 
-    # predict()
-    # prediction = ensemble()
-    # make_a_submission_file(prediction)
+    predict()
+    prediction = ensemble()
+    make_a_submission_file(prediction)
 
-    test()
+    # test()
     # make_prediction_files()
     # prediction = ensemble()
     # make_a_submission_file(prediction)
