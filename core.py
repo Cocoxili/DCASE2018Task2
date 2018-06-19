@@ -43,7 +43,7 @@ def train_on_fold(model, train_criterion, val_criterion,
               .format(prec1=best_prec1))
 
 
-def train_all_data(model, criterion, optimizer, train_loader, config, fold):
+def train_all_data(model, train_criterion, optimizer, train_loader, config, fold):
     model.train()
 
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[15, 30, 40], gamma=0.1)  # for wave
@@ -55,7 +55,7 @@ def train_all_data(model, criterion, optimizer, train_loader, config, fold):
 
         exp_lr_scheduler.step()
         # train for one epoch
-        prec1, prec3 = train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch)
+        prec1, prec3 = train_one_epoch(train_loader, model, train_criterion, optimizer, config, fold, epoch)
 
     save_checkpoint({
         'epoch': epoch + 1,
