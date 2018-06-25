@@ -98,7 +98,6 @@ def predict_one_model_with_wave(checkpoint, fold):
 
             output = model(data)
             output = torch.sum(output, dim=0, keepdim=True)
-            print(prediction.size(), output.size())
             prediction = torch.cat((prediction, output), dim=0)
 
     prediction = prediction[1:]
@@ -190,9 +189,9 @@ def ensemble():
         pf = '../prediction/MTOwaveResnet101/prediction_' + str(i) + '.pt'
         prediction_files.append(pf)
 
-    # for i in range(config.n_folds):
-    #     pf = '../prediction/mfcc+delta/prediction_' + str(i) + '.pt'
-    #     prediction_files.append(pf)
+    for i in range(config.n_folds):
+        pf = '../prediction/mixup_logmel_delta/prediction_' + str(i) + '.pt'
+        prediction_files.append(pf)
 
     # pf = '../prediction/logmel+delta/test_predictions.npy'
     # prediction_files.append(pf)
@@ -233,8 +232,8 @@ def make_a_submission_file(prediction):
 
 def make_prediction_files():
 
-    model_dir = '../model/wave1d/'
-    prediction_dir = '../prediction/wave1d'
+    model_dir = '../model/mixup_mfcc_delta/'
+    prediction_dir = '../prediction/mixup_mfcc_delta'
     # make train prediction
     train = pd.read_csv('../train.csv')
 
@@ -258,15 +257,15 @@ def make_prediction_files():
               .format(foldNum, len(train_set), len(val_set)))
 
         # define train loader and val loader
-        # valSet = Freesound_logmel(config=config, frame=val_set,
-        #                      transform=transforms.Compose([ToTensor()]),
-        #                      mode="test")
-        #
-        # val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-
-        valSet = Freesound(config=config, frame=val_set, mode="test")
+        valSet = Freesound_logmel(config=config, frame=val_set,
+                             transform=transforms.Compose([ToTensor()]),
+                             mode="test")
 
         val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+
+        # valSet = Freesound(config=config, frame=val_set, mode="test")
+        #
+        # val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
 
         train_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%foldNum)
 
@@ -279,14 +278,14 @@ def make_prediction_files():
     # make test prediction
     test_set = pd.read_csv('../sample_submission.csv')
 
-    # testSet = Freesound_logmel(config=config, frame=test_set,
-    #                     transform=transforms.Compose([ToTensor()]),
-    #                     mode="test")
-    # test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-
-    testSet = Freesound(config=config, frame=test_set, mode="test")
-
+    testSet = Freesound_logmel(config=config, frame=test_set,
+                        transform=transforms.Compose([ToTensor()]),
+                        mode="test")
     test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+
+    # testSet = Freesound(config=config, frame=test_set, mode="test")
+    #
+    # test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
 
     test_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%(config.n_folds+1))
 
@@ -297,47 +296,51 @@ def make_prediction_files():
 
 
 def test():
-    file = '../prediction/wave1d/test_predictions.npy'
+    # file = '../prediction/mixup_mfcc_delta/test_predictions.npy'
+    # file = np.load(file)
+    # print(file.shape)
+    # index = np.array([[i] for i in range(file.shape[0])])
+    # # index = np.array([0,1,2,3])
+    # # print(index.shape)
+    # file = np.hstack((index, file))
+    # print(file)
+    # print(file.shape)
+    #
+    # target_file = '../prediction_index/mixup_mfcc_delta/test_predictions.npy'
+    # np.save(target_file, file)
+
+    file = '../prediction_index/lcnn/test_predictions.npy'
     file = np.load(file)
     print(file.shape)
-    # index = np.zeros((file.shape[0], 1))
-    index = np.array([[i] for i in range(file.shape[0])])
-    # index = np.array([0,1,2,3])
-    # print(index.shape)
-    file = np.hstack((index, file))
-    print(file)
-    print(file.shape)
-
-    target_file = '../prediction_index/wave1d/test_predictions.npy'
-    np.save(target_file, file)
-
+    print(file[0])
 
 if __name__ == "__main__":
 
-    # config = Config(sampling_rate=22050,
-    #                 audio_duration=1.5,
-    #                 n_folds=5,
-    #                 data_dir="../logmel+delta_w80_s10_m64",
-    #                 arch='resnet50_logmel',
-    #                 lr=0.01,
-    #                 pretrain=True,
-    #                 epochs=40,
-    #                 debug=False)
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
 
-    config = Config(debug=False,
-                    sampling_rate=44100,
+    config = Config(sampling_rate=22050,
                     audio_duration=1.5,
-                    data_dir="../data-44100",
-                    arch='MTOwaveResnet101',
+                    n_folds=5,
+                    data_dir="../logmel+delta_w80_s10_m64",
+                    arch='resnet50_mfcc',
                     lr=0.01,
                     pretrain=True,
-                    epochs=50)
+                    epochs=40,
+                    debug=False)
 
-    predict()
-    prediction = ensemble()
-    make_a_submission_file(prediction)
+    # config = Config(debug=False,
+    #                 sampling_rate=44100,
+    #                 audio_duration=1.5,
+    #                 data_dir="../data-44100",
+    #                 arch='MTOwaveResnet101',
+    #                 lr=0.01,
+    #                 pretrain=True,
+    #                 epochs=50)
 
-    # test()
-    # make_prediction_files()
+    # predict()
     # prediction = ensemble()
     # make_a_submission_file(prediction)
+
+
+    # make_prediction_files()
+    test()
