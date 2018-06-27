@@ -3,9 +3,9 @@ import math
 import torch.utils.model_zoo as model_zoo
 import torch
 
-# __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-#            'waveResnet18', 'waveResnet34', 'waveResnet50', 'waveResnet101',
-#            'logmelResnet18', 'logmelResnet34', 'logmelResnet50', 'logmelResnet101']
+__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
+           'waveResnet18', 'waveResnet34', 'waveResnet50', 'waveResnet101',
+           'logmelResnet18', 'logmelResnet34', 'logmelResnet50', 'logmelResnet101']
 
 
 model_urls = {
@@ -194,7 +194,7 @@ class WaveResNet(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
         self.avgpool = nn.AvgPool2d((3, 14), stride=(1, 1))
-        self.fc = nn.Linear(512 * block.expansion, 41)
+        self.fc = nn.Linear(512 * block.expansion, 50)
 
         for m in self.children():
             if isinstance(m, nn.Conv2d):
@@ -265,7 +265,7 @@ class SWaveResNet(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
         self.avgpool = nn.AvgPool2d((3, 14), stride=(1, 1))
-        self.fc = nn.Linear(512 * block.expansion, 41)
+        self.fc = nn.Linear(512 * block.expansion, 50)
 
         for m in self.children():
             if isinstance(m, nn.Conv2d):
@@ -312,9 +312,10 @@ class SWaveResNet(nn.Module):
 
 class LogmelResNet(nn.Module):
 
-    def __init__(self, block, modules, num_classes=41):
+    def __init__(self, block, modules, num_classes=50):
         self.inplanes = 64
         super(LogmelResNet, self).__init__()
+
 
         self.conv0  = nn.Conv2d(1, 64, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn0 = nn.BatchNorm2d(64)
@@ -404,7 +405,7 @@ def resnet152(pretrained=False, **kwargs):
         model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
     return model
 
-def MTOwaveResnet18(pretrained=False, **kwargs):
+def waveResnet18(pretrained=False, **kwargs):
     """Constructs a waveResNet-18 model.
 
     Args:
@@ -420,7 +421,7 @@ def MTOwaveResnet18(pretrained=False, **kwargs):
     model = WaveResNet(BasicBlock, modules)
     return model
 
-def MTOwaveResnet34(pretrained=False, **kwargs):
+def waveResnet34(pretrained=False, **kwargs):
     """Constructs a waveResNet-34 model.
 
     Args:
@@ -436,7 +437,7 @@ def MTOwaveResnet34(pretrained=False, **kwargs):
     model = WaveResNet(BasicBlock, modules)
     return model
 
-def MTOwaveResnet50(pretrained=False, **kwargs):
+def waveResnet50(pretrained=False, **kwargs):
     """Constructs a waveResNet-18 model.
 
     Args:
@@ -453,7 +454,7 @@ def MTOwaveResnet50(pretrained=False, **kwargs):
     model = WaveResNet(Bottleneck, modules)
     return model
 
-def MTOwaveResnet101(pretrained=False, **kwargs):
+def waveResnet101(pretrained=False, **kwargs):
     """Constructs a waveResNet-18 model.
 
     Args:
