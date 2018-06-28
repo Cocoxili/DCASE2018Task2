@@ -93,10 +93,10 @@ def main():
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda()
 
-    # optimizer = optim.SGD(model.parameters(), lr=config.lr,
-    #                       momentum=config.momentum,
-    #                       weight_decay=config.weight_decay)
-    optimizer = optim.Adam(model.parameters(), lr=config.lr)
+    optimizer = optim.SGD(model.parameters(), lr=config.lr,
+                          momentum=config.momentum,
+                          weight_decay=config.weight_decay)
+    # optimizer = optim.Adam(model.parameters(), lr=config.lr)
 
     cudnn.benchmark = True
 

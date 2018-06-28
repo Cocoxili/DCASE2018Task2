@@ -112,6 +112,8 @@ def predict_one_model_with_logmel(checkpoint, fold):
 
     best_prec1 = checkpoint['best_prec1']
     model = checkpoint['model']
+    # model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    # model.load_state_dict(checkpoint['state_dict'])
     model = model.cuda()
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
@@ -177,9 +179,9 @@ def predict():
     Save test predictions.
     """
     for i in range(config.n_folds):
-        ckp = '../model/mixup_mfcc_delta/model_best.' + str(i) + '.pth.tar'
+        ckp = config.model_dir + '/model_best.'+ str(i) + '.pth.tar'
         prediction = predict_one_model_with_logmel(ckp, i)
-        torch.save(prediction, '../prediction/mixup_mfcc_delta/prediction_'+str(i)+'.pt')
+        torch.save(prediction, config.prediction_dir + '/prediction_'+str(i)+'.pt')
 
 
 def txt2tensor():
@@ -218,12 +220,12 @@ def txt2tensor():
 
 def ensemble():
     prediction_files = []
-    for i in range(config.n_folds):
-        pf = '../prediction/mixup_mfcc_delta/prediction_' + str(i) + '.pt'
-        prediction_files.append(pf)
+    # for i in range(config.n_folds):
+    #     pf = '../prediction/mixup_mfcc_delta/prediction_' + str(i) + '.pt'
+    #     prediction_files.append(pf)
 
     for i in range(config.n_folds):
-        pf = '../prediction/mixup_logmel_delta/prediction_' + str(i) + '.pt'
+        pf = '../prediction/mixup_logmel_delta_se_resnext50_32x4d/prediction_' + str(i) + '.pt'
         prediction_files.append(pf)
 
     # pf = '../prediction/logmel+delta/test_predictions.npy'
@@ -354,13 +356,15 @@ if __name__ == "__main__":
 
     config = Config(sampling_rate=22050,
                     audio_duration=1.5,
+                    batch_size=128,
                     n_folds=5,
-                    data_dir="../mfcc+delta_w80_s10_m64",
-                    arch='resnet50_logmel',
+                    data_dir="../logmel+delta_w80_s10_m64",
+                    model_dir='../model/mixup_logmel_delta_se_resnext50_32x4d',
+                    prediction_dir='../prediction/mixup_logmel_delta_se_resnext50_32x4d',
+                    arch='se_resnext50_32x4d_',
                     lr=0.01,
-                    pretrain=True,
-                    epochs=40,
-                    debug=False)
+                    pretrain='imagenet',
+                    epochs=100)
 
     # config = Config(debug=False,
     #                 sampling_rate=22050,
@@ -371,12 +375,12 @@ if __name__ == "__main__":
     #                 pretrain=False,
     #                 epochs=50)
 
-    # predict()
-    # prediction = ensemble()
-    # make_a_submission_file(prediction)
+    predict()
+    prediction = ensemble()
+    make_a_submission_file(prediction)
 
     # test()
     # make_prediction_files()
     # tensor = txt2tensor()
-    prediction = ensemble()
-    make_a_submission_file(prediction)
+    # prediction = ensemble()
+    # make_a_submission_file(prediction)

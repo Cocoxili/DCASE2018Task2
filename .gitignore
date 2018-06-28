@@ -5,7 +5,7 @@ __pycache__/
 
 
 # submission file
-sbm.csv
+*.csv
 
 # pyCharm files
 .idea/
