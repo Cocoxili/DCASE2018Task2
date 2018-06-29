@@ -6,9 +6,11 @@ import librosa
 import logging
 import os
 from network import *
-from waveResnet import *
-from MTO_network import *
-
+from network_waveResnet import *
+# from network_MTO import *
+from network_senet import *
+from network_resnext import *
+from network_MTOresnext import *
 
 def save_data(filename, data):
     """Save variable into a pickle file
@@ -111,10 +113,11 @@ def accuracy(output, target, topk=(1,)):
         return res
 
 
-def save_checkpoint(state, is_best, fold, filename='../model/checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, fold, config, filename='../model/checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        best_name = '../model/model_best.' + str(fold) + '.pth.tar'
+        best_name = config.model_dir + '/model_best.' + str(fold) + '.pth.tar'
+        # best_name = '../model/mixup_logmel_delta_resnext101_64x4d/model_best.' + str(fold) + '.pth.tar'
         shutil.copyfile(filename, best_name)
 
     # def make_submission():
@@ -147,3 +150,23 @@ def make_dirs():
             os.mkdir(dir)
             print('Make dir: %s' %dir)
 
+
+def make_one_hot(target, num_class=41):
+    """
+    convert index tensor into one-hot tensor
+    """
+    assert isinstance(target, torch.LongTensor)
+    return torch.zeros(target.size()[0], num_class).scatter_(1, target.view(-1, 1), 1)
+
+
+def cross_entropy_onehot(input, target, size_average=True):
+    """
+    Cross entropy  that accepts soft targets (like [0, 0.1, 0.1, 0.8, 0]).
+    """
+    # print(input.size(), target.size())
+    assert input.size() == target.size()
+
+    if size_average:
+        return torch.mean(torch.sum(-target * F.log_softmax(input, dim=1), dim=1))
+    else:
+        return torch.sum(torch.sum(-target * F.log_softmax(input, dim=1), dim=1))

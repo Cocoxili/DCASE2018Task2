@@ -5,6 +5,8 @@ class Config(object):
                  sampling_rate=22050, audio_duration=1.5, n_classes=41,
                  train_dir='../audio_train', test_dir='../audio_test',
                  data_dir='../data-22050',
+                 model_dir='../model',
+                 prediction_dir='../prediction',
                  arch='resnet101_m', pretrain=False,
                  cuda=True, print_freq=10, epochs=50,
                  batch_size=64,
@@ -29,6 +31,8 @@ class Config(object):
         self.train_dir = train_dir
         self.test_dir = test_dir
         self.data_dir = data_dir
+        self.model_dir = model_dir
+        self.prediction_dir = prediction_dir
         self.arch = arch
         self.pretrain = pretrain
         self.cuda = cuda

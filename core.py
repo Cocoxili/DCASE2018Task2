@@ -13,7 +13,7 @@ def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config,
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[15, 30, 40], gamma=0.1)  # for wave
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[10, 20, 30], gamma=0.1)  # for logmel
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[60, 120, 140], gamma=0.1)  # for MTO-resnet
-    exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=40)
+    exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.epochs)
 
 
     for epoch in range(config.epochs):
@@ -32,11 +32,12 @@ def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config,
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': config.arch,
-                'model': model,
-                # 'state_dict': model.state_dict(),
+                # 'model': model,
+                'state_dict': model.state_dict(),
                 'best_prec1': best_prec1,
                 'optimizer': optimizer.state_dict(),
-            }, is_best, fold)
+            }, is_best, fold, config,
+            filename=config.model_dir + '/checkpoint.pth.tar')
 
     logging.info(' *** Best Prec@1 {prec1:.3f}'
               .format(prec1=best_prec1))
@@ -48,7 +49,7 @@ def train_all_data(model, criterion, optimizer, train_loader, config, fold):
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[15, 30, 40], gamma=0.1)  # for wave
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[10, 20, 30], gamma=0.1)  # for logmel
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[60, 120, 140], gamma=0.1)  # for MTO-resnet
-    exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=40)
+    exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.epochs)
 
     for epoch in range(config.epochs):
 
@@ -59,11 +60,12 @@ def train_all_data(model, criterion, optimizer, train_loader, config, fold):
     save_checkpoint({
         'epoch': epoch + 1,
         'arch': config.arch,
-        'model': model,
-        # 'state_dict': model.state_dict(),
+        # 'model': model,
+        'state_dict': model.state_dict(),
         'best_prec1': prec1,
         'optimizer': optimizer.state_dict(),
-    }, True, fold)
+    }, True, fold, config,
+        filename=config.model_dir + '/checkpoint.pth.tar')
 
 
 
