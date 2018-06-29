@@ -10,6 +10,7 @@ from network_waveResnet import *
 # from network_MTO import *
 from network_senet import *
 from network_resnext import *
+from network_MTOresnext import *
 
 def save_data(filename, data):
     """Save variable into a pickle file

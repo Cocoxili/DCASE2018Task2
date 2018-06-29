@@ -65,7 +65,8 @@ def train_all_data(model, train_criterion, optimizer, train_loader, config, fold
         # 'state_dict': model.state_dict(),
         'best_prec1': prec1,
         'optimizer': optimizer.state_dict(),
-    }, True, fold)
+    }, True, fold, config,
+        filename=config.model_dir +'/checkpoint.pth.tar')
 
 
 
