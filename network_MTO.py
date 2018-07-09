@@ -186,23 +186,23 @@ class WaveResNet(nn.Module):
         self.pool2_2 = nn.MaxPool1d(kernel_size=30, stride=30)
         self.pool2_3 = nn.MaxPool1d(kernel_size=15, stride=15)
 
-        self.conv0  = nn.Conv2d(1, 64, kernel_size=3, stride=2, padding=1, bias=False)
-        self.bn0 = nn.BatchNorm2d(64)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        # self.conv0  = nn.Conv2d(1, 64, kernel_size=3, stride=2, padding=1, bias=False)
+        # self.bn0 = nn.BatchNorm2d(64)
+        # self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.resBlocks = nn.Sequential(*modules)
 
         self.relu = nn.ReLU(inplace=True)
-        self.avgpool = nn.AvgPool2d((3, 14), stride=(1, 1))
+        self.avgpool = nn.AvgPool2d((1, 14), stride=(1, 1))
         self.fc = nn.Linear(512 * block.expansion, 50)
-
-        for m in self.children():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+        #
+        # for m in self.children():
+        #     if isinstance(m, nn.Conv2d):
+        #         n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+        #         m.weight.data.normal_(0, math.sqrt(2. / n))
+        #     elif isinstance(m, nn.BatchNorm2d):
+        #         m.weight.data.fill_(1)
+        #         m.bias.data.zero_()
 
 
 
@@ -227,17 +227,19 @@ class WaveResNet(nn.Module):
         x2 = torch.unsqueeze(x2, 1)
         x3 = torch.unsqueeze(x3, 1)  # (batchSize, 1L, 32L, 441L)
 
-        x = torch.cat((x1, x2, x3), dim=2) #(batchSize, 1L, 96L, 441L)
-        # x = torch.cat((x, x), dim=1)  # (batchSize, 2L, 96L, 441L)
+        # x = torch.cat((x1, x2, x3), dim=2) #(batchSize, 1L, 96L, 441L)
+        x = torch.cat((x1, x2, x3), dim=1)  # (batchSize, 2L, 96L, 441L)
 
-        x = self.conv0(x)
-        x = self.bn0(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
+
+        # x = self.conv0(x)
+        # x = self.bn0(x)
+        # x = self.relu(x)
+        # x = self.maxpool(x)
 
         x = self.resBlocks(x)
 
         x = self.avgpool(x)
+
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         return x
@@ -467,7 +469,7 @@ def waveResnet101(pretrained=False, **kwargs):
         resnet = resnet101()
 
     # layer1,2,3,4
-    modules = list(resnet.children())[4:8]
+    modules = list(resnet.children())[:8]
     model = WaveResNet(Bottleneck, modules)
     return model
 

@@ -124,15 +124,29 @@ if __name__ == "__main__":
                     n_folds=5,
                     sampling_rate=44100,
                     audio_duration=1.5,
-                    batch_size=32,
+                    batch_size=16,
                     data_dir="../data-44100",
                     arch='waveResnext101_32x4d',
-                    model_dir='../model/waveResnext101_32x4d',
-                    prediction_dir='../prediction/waveResnext101_32x4d',
+                    model_dir='../model/waveResnext101_32x4d_test64',
+                    prediction_dir='../prediction/waveResnext101_32x4d_test64',
                     lr=0.01,
                     pretrain='imagenet',
-                    print_freq=30,
+                    print_freq=60,
                     epochs=50)
+
+    # config = Config(debug=False,
+    #                 n_folds=5,
+    #                 sampling_rate=44100,
+    #                 audio_duration=1.5,
+    #                 batch_size=32,
+    #                 data_dir="../data-44100",
+    #                 arch='waveResnet101',
+    #                 model_dir='../model/MTOwaveResnet101_3c',
+    #                 prediction_dir='../prediction/MTOwaveResnet101_3c',
+    #                 lr=0.01,
+    #                 pretrain=True,
+    #                 print_freq=30,
+    #                 epochs=50)
 
     # create log
     logging = create_logging('../log', filemode='a')

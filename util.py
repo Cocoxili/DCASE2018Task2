@@ -6,8 +6,8 @@ import librosa
 import logging
 import os
 from network import *
-from network_waveResnet import *
-# from network_MTO import *
+# from network_waveResnet import *
+from network_MTO import *
 from network_senet import *
 from network_resnext import *
 from network_MTOresnext import *
