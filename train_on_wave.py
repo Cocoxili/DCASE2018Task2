@@ -76,7 +76,7 @@ def main():
               .format(foldNum, time_on_fold))
 
     # # train on the whole training set
-    foldNum = config.n_folds + 1
+    foldNum = config.n_folds
     end = time.time()
     logging.info("Fold {0}, Train samples:{1}."
                  .format(foldNum, len(train)))

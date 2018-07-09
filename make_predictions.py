@@ -5,41 +5,41 @@ from network import *
 from tqdm import tqdm
 import torch.nn.functional as F
 
-def predict_one_model(checkpoint, data_loader):
+# def predict_one_model(checkpoint, data_loader):
+#
+#     print("=> loading checkpoint '{}'".format(checkpoint))
+#     checkpoint = torch.load(checkpoint)
+#
+#     best_prec1 = checkpoint['best_prec1']
+#     model = checkpoint['model']
+#     model = model.cuda()
+#
+#     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
+#
+#     if config.cuda is True:
+#         model.cuda()
+#     model.eval()
+#
+#     prediction = torch.zeros((1, 41)).cuda()
+#     with torch.no_grad():
+#         for input in tqdm(data_loader):
+#
+#             if config.cuda:
+#                 input = input.cuda()
+#
+#             # compute output
+#             # print("input size:", input.size())
+#             output = model(input)
+#             output = F.softmax(output, dim=1)
+#             # print(output.size())
+#             # print(output.type())
+#             prediction = torch.cat((prediction, output), dim=0)
+#
+#     prediction = prediction[1:].cpu().numpy()
+#     return prediction
 
-    print("=> loading checkpoint '{}'".format(checkpoint))
-    checkpoint = torch.load(checkpoint)
 
-    best_prec1 = checkpoint['best_prec1']
-    model = checkpoint['model']
-    model = model.cuda()
-
-    print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
-
-    if config.cuda is True:
-        model.cuda()
-    model.eval()
-
-    prediction = torch.zeros((1, 41)).cuda()
-    with torch.no_grad():
-        for input in tqdm(data_loader):
-
-            if config.cuda:
-                input = input.cuda()
-
-            # compute output
-            # print("input size:", input.size())
-            output = model(input)
-            output = F.softmax(output, dim=1)
-            # print(output.size())
-            # print(output.type())
-            prediction = torch.cat((prediction, output), dim=0)
-
-    prediction = prediction[1:].cpu().numpy()
-    return prediction
-
-
-def predict_one_model_with_wave(checkpoint):
+def predict_one_model_with_wave(checkpoint, frame):
 
     print("=> loading checkpoint '{}'".format(checkpoint))
     checkpoint = torch.load(checkpoint)
@@ -52,9 +52,9 @@ def predict_one_model_with_wave(checkpoint):
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
 
-    test_set = pd.read_csv('../sample_submission.csv')
-    test_set.set_index("fname")
-    frame = test_set
+    # test_set = pd.read_csv('../sample_submission.csv')
+    # test_set.set_index("fname")
+    # frame = test_set
 
     win_size = config.audio_length
     stride = int(config.sampling_rate * 0.2)
@@ -63,6 +63,7 @@ def predict_one_model_with_wave(checkpoint):
         model.cuda()
     model.eval()
 
+    file_names = []
     prediction = torch.zeros((1, 41)).cuda()
 
     with torch.no_grad():
@@ -101,13 +102,18 @@ def predict_one_model_with_wave(checkpoint):
             output = model(data)
             output = torch.sum(output, dim=0, keepdim=True)
 
+            output = F.softmax(output, dim=1)
+
             prediction = torch.cat((prediction, output), dim=0)
 
+            file_names.append(frame["fname"][idx])
+
     prediction = prediction[1:]
-    return prediction
+
+    return file_names, prediction
 
 
-def predict_one_model_with_logmel(checkpoint, fold):
+def predict_one_model_with_logmel(checkpoint, frame):
 
     print("=> loading checkpoint '{}'".format(checkpoint))
     checkpoint = torch.load(checkpoint)
@@ -120,9 +126,9 @@ def predict_one_model_with_logmel(checkpoint, fold):
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
 
-    test_set = pd.read_csv('../sample_submission.csv')
-    test_set.set_index("fname")
-    frame = test_set
+    # test_set = pd.read_csv('../sample_submission.csv')
+    # test_set.set_index("fname")
+    # frame = test_set
 
     input_frame_length = int(config.audio_duration * 1000 / config.frame_shift)
     stride = 20
@@ -344,12 +350,22 @@ def make_a_submission_file(prediction):
 #     np.save(os.path.join(prediction_dir, 'test_predictions.npy'), predictions)
 
 
-def make_prediction_files():
+def make_prediction_files(input, mean_method='arithmetic'):
+    """
+    make two prediction files for stacking. One for train and one for test. 
+    Prediction matrix of samples x classes (9400 x 41)
+    
+    :param input: 'wave' or 'logmel'
+    :param mean_method: 'arithmetic' or 'geometric'
+    """
 
-    model_dir = '../model/mixup_logmel_delta_resnext101_32x4d/'
-    prediction_dir = '../prediction/mixup_logmel_delta_resnext101_32x4d'
+    model_dir = config.model_dir
+
     # make train prediction
+
     train = pd.read_csv('../train.csv')
+
+    # train = train[:100] # for debug
 
     LABELS = list(train.label.unique())
 
@@ -361,52 +377,71 @@ def make_prediction_files():
     skf = StratifiedKFold(n_splits=config.n_folds)
 
     predictions = np.zeros((1, 41))
-
+    file_names = []
     for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
-        train_set = train.iloc[train_split]
-        train_set = train_set.reset_index(drop=True)
         val_set = train.iloc[val_split]
         val_set = val_set.reset_index(drop=True)
-        logging.info("Fold {0}, Train samples:{1}, val samples:{2}"
-              .format(foldNum, len(train_set), len(val_set)))
+        print("Fold {0}, Val samples:{1}"
+              .format(foldNum, len(val_set)))
 
-        # define train loader and val loader
-        # valSet = Freesound_logmel(config=config, frame=val_set,
-        #                      transform=transforms.Compose([ToTensor()]),
-        #                      mode="test")
-        #
-        # val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+        ckp = os.path.join(model_dir, 'model_best.%d.pth.tar'%foldNum)
 
-        valSet = Freesound(config=config, frame=val_set, mode="test")
+        if input == 'wave':
+            fn, pred = predict_one_model_with_wave(ckp, val_set)
 
-        val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+        elif input == 'logmel':
+            fn, pred = predict_one_model_with_logmel(ckp, val_set)
 
-        train_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%foldNum)
+        file_names.extend(fn)
 
-        predictions = np.concatenate((predictions, predict_one_model(train_model, val_loader)))
+        predictions = np.concatenate((predictions, pred.cpu().numpy()))
 
     predictions = predictions[1:]
     # print(predictions, np.sum(predictions, axis=1))
-    np.save(os.path.join(prediction_dir, 'train_predictions.npy'), predictions)
+    save_to_csv(file_names, predictions, 'train_predictions.csv')
 
     # make test prediction
     test_set = pd.read_csv('../sample_submission.csv')
 
-    # testSet = Freesound_logmel(config=config, frame=test_set,
-    #                     transform=transforms.Compose([ToTensor()]),
-    #                     mode="test")
-    # test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+    # test_set = test_set[:50] # for debug
 
-    testSet = Freesound(config=config, frame=test_set, mode="test")
+    test_set.set_index("fname")
+    frame = test_set
 
-    test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
+    pred_list = []
 
-    test_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%(config.n_folds+1))
+    for i in range(config.n_folds):
+        ckp = config.model_dir + '/model_best.'+ str(i) + '.pth.tar'
+        if input == 'wave':
+            fn, pred = predict_one_model_with_wave(ckp, frame)
+        elif input == 'logmel':
+            fn, pred = predict_one_model_with_logmel(ckp, frame)
 
-    predictions = np.zeros((1, 41))
-    predictions = np.concatenate((predictions, predict_one_model(test_model, test_loader)))
-    predictions = predictions[1:]
-    np.save(os.path.join(prediction_dir, 'test_predictions.npy'), predictions)
+        pred = pred.cpu().numpy()
+        pred_list.append(pred)
+
+    if mean_method == 'arithmetic':
+        predictions = np.zeros_like(pred_list[0])
+        for pred in pred_list:
+            predictions = predictions + pred
+        predictions = predictions / len(pred_list)
+
+        print(predictions.shape)
+    elif mean_method == 'geometric':
+        predictions = np.ones_like(pred_list[0])
+        for pred in pred_list:
+            predictions = predictions * pred
+        predictions = predictions ** (1. / len(pred_list))
+    else:
+        print('mean_method not specified.')
+
+    save_to_csv(fn, predictions, 'test_predictions.csv')
+
+
+def save_to_csv(files_name, prediction, file):
+    df = pd.DataFrame(index=files_name, data=prediction)
+    path = os.path.join(config.prediction_dir, file)
+    df.to_csv(path, header=None)
 
 
 def test():
@@ -427,16 +462,16 @@ def test():
 
 if __name__ == "__main__":
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
 
     # config = Config(sampling_rate=22050,
     #                 audio_duration=1.5,
     #                 batch_size=128,
     #                 n_folds=5,
     #                 data_dir="../logmel+delta_w80_s10_m64",
-    #                 model_dir='../model/mixup_logmel_delta_se_resnext50_32x4d',
-    #                 prediction_dir='../prediction/mixup_logmel_delta_se_resnext50_32x4d',
-    #                 arch='se_resnext50_32x4d_',
+    #                 model_dir='../model/mixup_logmel_delta_resnext101_32x4d',
+    #                 prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d',
+    #                 arch='resnext101_32x4d_',
     #                 lr=0.01,
     #                 pretrain='imagenet',
     #                 epochs=100)
@@ -455,12 +490,9 @@ if __name__ == "__main__":
                     print_freq=60,
                     epochs=50)
 
-    # predict()
-    # prediction = ensemble()
-    # make_a_submission_file(prediction)
 
     # test()
-    make_prediction_files()
+    make_prediction_files(input='wave', mean_method='arithmetic')
     # tensor = txt2tensor()
-    prediction = ensemble()
+    # prediction = ensemble()
     # make_a_submission_file(prediction)
