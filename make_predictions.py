@@ -102,8 +102,6 @@ def predict_one_model_with_wave(checkpoint, frame):
             output = model(data)
             output = torch.sum(output, dim=0, keepdim=True)
 
-            # output = F.softmax(output, dim=1)
-
             prediction = torch.cat((prediction, output), dim=0)
 
             file_names.append(frame["fname"][idx])
@@ -119,9 +117,9 @@ def predict_one_model_with_logmel(checkpoint, frame):
     checkpoint = torch.load(checkpoint)
 
     best_prec1 = checkpoint['best_prec1']
-    # model = checkpoint['model']
-    model = run_method_by_string(config.arch)(pretrained=config.pretrain)
-    model.load_state_dict(checkpoint['state_dict'])
+    model = checkpoint['model']
+    # model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    # model.load_state_dict(checkpoint['state_dict'])
     model = model.cuda()
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
@@ -176,8 +174,6 @@ def predict_one_model_with_logmel(checkpoint, frame):
             # print("input:", data.size())
             output = model(data)
             output = torch.sum(output, dim=0, keepdim=True)
-
-            # output = F.softmax(output, dim=1)
 
             prediction = torch.cat((prediction, output), dim=0)
 
@@ -356,14 +352,16 @@ def make_prediction_files(input, mean_method='arithmetic'):
         # pred = pred.cpu().numpy()
         pred_list.append(pred)
 
-    predictions = torch.zeros_like(pred_list[0]).cuda()
+
 
     if mean_method == 'arithmetic':
+        predictions = torch.zeros_like(pred_list[0]).cuda()
         for pred in pred_list:
             predictions = predictions + pred
         predictions = predictions / len(pred_list)
 
     elif mean_method == 'geometric':
+        predictions = torch.ones_like(pred_list[0]).cuda()
         for pred in pred_list:
             predictions = predictions * pred
         predictions = predictions ** (1. / len(pred_list))
@@ -390,31 +388,31 @@ if __name__ == "__main__":
 
     os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
-    config = Config(sampling_rate=22050,
-                    audio_duration=1.5,
-                    batch_size=128,
-                    n_folds=5,
-                    data_dir="../logmel+delta_w80_s10_m64",
-                    model_dir='../model/mixup_logmel_delta_resnext101_32x4d',
-                    prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d',
-                    arch='resnext101_32x4d_',
-                    lr=0.01,
-                    pretrain='imagenet',
-                    epochs=100)
-
-    # config = Config(debug=False,
-    #                 n_folds=5,
-    #                 sampling_rate=44100,
+    # config = Config(sampling_rate=22050,
     #                 audio_duration=1.5,
-    #                 batch_size=16,
-    #                 data_dir="../data-44100",
-    #                 arch='waveResnext101_32x4d',
-    #                 model_dir='../model/waveResnext101_32x4d',
-    #                 prediction_dir='../prediction/waveResnext101_32x4d',
+    #                 batch_size=128,
+    #                 n_folds=5,
+    #                 data_dir="../logmel+delta_w80_s10_m64",
+    #                 model_dir='../model/mixup_logmel_delta_resnext101_32x4d',
+    #                 prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d',
+    #                 arch='resnext101_32x4d_',
     #                 lr=0.01,
     #                 pretrain='imagenet',
-    #                 print_freq=60,
-    #                 epochs=50)
+    #                 epochs=100)
+
+    config = Config(debug=False,
+                    n_folds=5,
+                    sampling_rate=44100,
+                    audio_duration=1.5,
+                    batch_size=16,
+                    data_dir="../data-44100",
+                    arch='waveResnext101_32x4d',
+                    model_dir='../model/waveResnext101_32x4d',
+                    prediction_dir='../prediction/waveResnext101_32x4d',
+                    lr=0.01,
+                    pretrain='imagenet',
+                    print_freq=60,
+                    epochs=50)
 
     # test()
 
@@ -424,5 +422,5 @@ if __name__ == "__main__":
     # make_a_submission_file(prediction)
 
 
-    make_prediction_files(input='logmel', mean_method='arithmetic')
-    # make_a_submission_file('test_predictions.csv', './sbm.csv')
+    # make_prediction_files(input='logmel', mean_method='arithmetic')
+    make_a_submission_file('test_predictions.csv', './sbm.csv')
