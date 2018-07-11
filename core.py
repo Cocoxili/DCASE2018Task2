@@ -33,8 +33,8 @@ def train_on_fold(model, train_criterion, val_criterion,
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': config.arch,
-                'model': model,
-                # 'state_dict': model.state_dict(), # for resnext
+                # 'model': model,
+                'state_dict': model.state_dict(), # for resnext
                 'best_prec1': best_prec1,
                 'optimizer': optimizer.state_dict(),
             }, is_best, fold, config,
@@ -61,8 +61,8 @@ def train_all_data(model, train_criterion, optimizer, train_loader, config, fold
     save_checkpoint({
         'epoch': epoch + 1,
         'arch': config.arch,
-        'model': model,
-        # 'state_dict': model.state_dict(),
+        # 'model': model,
+        'state_dict': model.state_dict(),
         'best_prec1': prec1,
         'optimizer': optimizer.state_dict(),
     }, True, fold, config,

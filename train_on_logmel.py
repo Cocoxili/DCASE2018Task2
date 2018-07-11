@@ -120,17 +120,17 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
     DEBUG = False
 
     config = Config(sampling_rate=22050,
                     audio_duration=1.5,
                     batch_size=128,
                     n_folds=5,
-                    data_dir="../logmel+delta_w80_s10_m64",
-                    model_dir='../model/mixup_logmel_delta_se_resnext50_32x4d',
-                    prediction_dir='../prediction/mixup_logmel_delta_se_resnext50_32x4d',
-                    arch='se_resnext50_32x4d_',
+                    data_dir="../mfcc+delta_w80_s10_m64",
+                    model_dir='../model/mixup_mfcc_delta_resnext101_32x4d',
+                    prediction_dir='../prediction/mixup_mfcc_delta_resnext101_32x4d',
+                    arch='resnext101_32x4d_',
                     lr=0.01,
                     pretrain='imagenet',
                     epochs=100)
