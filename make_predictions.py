@@ -290,7 +290,8 @@ def make_prediction_files(input, mean_method='arithmetic'):
 
     train = pd.read_csv('../train.csv')
 
-    # train = train[:100] # for debug
+    if config.debug:
+        train = train[:100] # for debug
 
     LABELS = list(train.label.unique())
 
@@ -335,7 +336,8 @@ def make_prediction_files(input, mean_method='arithmetic'):
     # make test prediction
     test_set = pd.read_csv('../sample_submission.csv')
 
-    # test_set = test_set[:50] # for debug
+    if config.debug:
+        test_set = test_set[:50] # for debug
 
     test_set.set_index("fname")
     frame = test_set
@@ -386,33 +388,34 @@ def test():
 
 if __name__ == "__main__":
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
 
-    # config = Config(sampling_rate=22050,
-    #                 audio_duration=1.5,
-    #                 batch_size=128,
-    #                 n_folds=5,
-    #                 data_dir="../logmel+delta_w80_s10_m64",
-    #                 model_dir='../model/mixup_logmel_delta_resnext101_32x4d',
-    #                 prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d',
-    #                 arch='resnext101_32x4d_',
-    #                 lr=0.01,
-    #                 pretrain='imagenet',
-    #                 epochs=100)
-
-    config = Config(debug=False,
-                    n_folds=5,
-                    sampling_rate=44100,
+    config = Config(sampling_rate=22050,
                     audio_duration=1.5,
-                    batch_size=16,
-                    data_dir="../data-44100",
-                    arch='waveResnext101_32x4d',
-                    model_dir='../model/waveResnext101_32x4d',
-                    prediction_dir='../prediction/waveResnext101_32x4d',
+                    batch_size=128,
+                    n_folds=5,
+                    data_dir="../logmel+delta_w80_s10_m64",
+                    model_dir='../model/mixup_logmel_delta_se_resnext101_32x4d',
+                    prediction_dir='../prediction/mixup_logmel_delta_se_resnext101_32x4d',
+                    arch='se_resnext101_32x4d_',
                     lr=0.01,
                     pretrain='imagenet',
-                    print_freq=60,
-                    epochs=50)
+                    epochs=100,
+                    debug=False)
+
+    # config = Config(debug=False,
+    #                 n_folds=5,
+    #                 sampling_rate=44100,
+    #                 audio_duration=1.5,
+    #                 batch_size=16,
+    #                 data_dir="../data-44100",
+    #                 arch='waveResnext101_32x4d',
+    #                 model_dir='../model/waveResnext101_32x4d',
+    #                 prediction_dir='../prediction/waveResnext101_32x4d',
+    #                 lr=0.01,
+    #                 pretrain='imagenet',
+    #                 print_freq=60,
+    #                 epochs=50)
 
     # test()
 
@@ -422,5 +425,5 @@ if __name__ == "__main__":
     # make_a_submission_file(prediction)
 
 
-    # make_prediction_files(input='logmel', mean_method='arithmetic')
-    make_a_submission_file('test_predictions.csv', './sbm.csv')
+    make_prediction_files(input='logmel', mean_method='arithmetic')
+    # make_a_submission_file('test_predictions.csv', './sbm.csv')
