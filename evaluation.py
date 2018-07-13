@@ -220,12 +220,12 @@ def txt2tensor():
 
 def ensemble():
     prediction_files = []
-    # for i in range(config.n_folds):
-    #     pf = '../prediction/mixup_mfcc_delta/prediction_' + str(i) + '.pt'
-    #     prediction_files.append(pf)
+    for i in range(config.n_folds):
+        pf = '../prediction/waveResnext101_32x4d/prediction_' + str(i) + '.pt'
+        prediction_files.append(pf)
 
     for i in range(config.n_folds):
-        pf = '../prediction/mixup_logmel_delta_se_resnext50_32x4d/prediction_' + str(i) + '.pt'
+        pf = '../prediction/mixup_logmel_delta_resnext101_32x4d/prediction_' + str(i) + '.pt'
         prediction_files.append(pf)
 
     # pf = '../prediction/logmel+delta/test_predictions.npy'
@@ -375,7 +375,7 @@ if __name__ == "__main__":
     #                 pretrain=False,
     #                 epochs=50)
 
-    predict()
+    # predict()
     prediction = ensemble()
     make_a_submission_file(prediction)
 

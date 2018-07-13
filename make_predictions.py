@@ -117,9 +117,9 @@ def predict_one_model_with_logmel(checkpoint, frame):
     checkpoint = torch.load(checkpoint)
 
     best_prec1 = checkpoint['best_prec1']
-    model = checkpoint['model']
-    # model = run_method_by_string(config.arch)(pretrained=config.pretrain)
-    # model.load_state_dict(checkpoint['state_dict'])
+    # model = checkpoint['model']
+    model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    model.load_state_dict(checkpoint['state_dict'])
     model = model.cuda()
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
@@ -394,10 +394,10 @@ if __name__ == "__main__":
                     audio_duration=1.5,
                     batch_size=128,
                     n_folds=5,
-                    data_dir="../logmel+delta_w80_s10_m64",
-                    model_dir='../model/mixup_logmel_delta_se_resnext101_32x4d',
-                    prediction_dir='../prediction/mixup_logmel_delta_se_resnext101_32x4d',
-                    arch='se_resnext101_32x4d_',
+                    data_dir="../mfcc+delta_w80_s10_m64",
+                    model_dir='../model/mixup_mfcc_delta_resnext101_32x4d',
+                    prediction_dir='../prediction/mixup_mfcc_delta_resnext101_32x4d',
+                    arch='resnext101_32x4d_',
                     lr=0.01,
                     pretrain='imagenet',
                     epochs=100,
