@@ -4,8 +4,7 @@ from util import *
 from torch.optim import lr_scheduler
 
 
-
-def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config, fold):
+def train_on_fold(model, train_criterion, val_criterion, optimizer, train_loader, val_loader, config, fold):
     model.train()
 
     best_prec1 = 0
@@ -15,18 +14,17 @@ def train_on_fold(model, criterion, optimizer, train_loader, val_loader, config,
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[60, 120, 140], gamma=0.1)  # for MTO-resnet
     exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.epochs)
 
-
     for epoch in range(config.epochs):
         exp_lr_scheduler.step()
 
         # train for one epoch
-        train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch)
+        train_one_epoch(train_loader, model, train_criterion, optimizer, config, fold, epoch)
 
         # evaluate on validation set
-        prec1, prec3 = val_on_fold(model, criterion, val_loader, config, fold)
+        prec1, prec3 = val_on_fold(model, val_criterion, val_loader, config, fold)
 
         # remember best prec@1 and save checkpoint
-        if config.debug == False or True:
+        if not config.debug:
             is_best = prec1 > best_prec1
             best_prec1 = max(prec1, best_prec1)
             save_checkpoint({
@@ -81,6 +79,10 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
+
+        one_hot_label = make_one_hot(target)
+        input, target = mixup(input, one_hot_label, alpha=3)
+
         # measure data loading time
         data_time.update(time.time() - end)
 
@@ -300,3 +302,33 @@ def val_on_file_logmel(model, config, frame):
               .format(top1=top1, top3=top3, elapse=elapse))
 
         # return top1.avg, to
+
+
+def mixup(data, one_hot_labels, alpha=1):
+    batch_size = data.size()[0]
+
+    weights = np.random.beta(alpha, alpha, batch_size)
+
+    weights = torch.from_numpy(weights).type(torch.FloatTensor)
+
+    print('Mixup weights', weights)
+    index = np.random.permutation(batch_size)
+    #     print(index)
+    x1, x2 = data, data[index]
+
+    x = torch.zeros_like(x1)
+    for i in range(batch_size):
+        for c in range(x.size()[1]):
+            x[i][c] = x1[i][c] * weights[i] + x2[i][c] * (1 - weights[i])
+            #     print(x)
+
+    y1 = one_hot_labels
+    y2 = one_hot_labels[index]
+
+    y = torch.zeros_like(y1)
+
+    for i in range(batch_size):
+        y[i] = y1[i] * weights[i] + y2[i] * (1 - weights[i])
+    print(x)
+    print(y)
+    return x, y
