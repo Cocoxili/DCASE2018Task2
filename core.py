@@ -312,6 +312,7 @@ def mixup(data, one_hot_labels, alpha=1):
     weights = torch.from_numpy(weights).type(torch.FloatTensor)
 
     print('Mixup weights', weights)
+    #     print('Mixup weights', weights)
     index = np.random.permutation(batch_size)
     #     print(index)
     x1, x2 = data, data[index]
@@ -331,4 +332,5 @@ def mixup(data, one_hot_labels, alpha=1):
         y[i] = y1[i] * weights[i] + y2[i] * (1 - weights[i])
     print(x)
     print(y)
+
     return x, y
