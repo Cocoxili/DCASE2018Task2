@@ -12,7 +12,7 @@ import time
 
 def main():
 
-    train = pd.read_csv('../train.csv')
+    train = pd.read_csv('../input/train.csv')
 
     LABELS = list(train.label.unique())
     # ['Hi-hat', 'Saxophone', 'Trumpet', 'Glockenspiel', 'Cello', 'Knock',
@@ -84,55 +84,56 @@ def main():
               .format(foldNum, time_on_fold))
 
     # train on the whole training set
-    foldNum = config.n_folds + 1
-    end = time.time()
-    logging.info("Fold {0}, Train samples:{1}."
-                 .format(foldNum, len(train)))
+    #  foldNum = config.n_folds + 1
+    #  end = time.time()
+    #  logging.info("Fold {0}, Train samples:{1}."
+                 #  .format(foldNum, len(train)))
 
-    # define train loader and val loader
-    trainSet = Freesound_logmel(config=config, frame=train,
-                                transform=transforms.Compose([ToTensor()]),
-                                mode="train")
-    train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
+    #  # define train loader and val loader
+    #  trainSet = Freesound_logmel(config=config, frame=train,
+                                #  transform=transforms.Compose([ToTensor()]),
+                                #  mode="train")
+    #  train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
 
-    model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    #  model = run_method_by_string(config.arch)(pretrained=config.pretrain)
 
-    if config.cuda:
-        model.cuda()
+    #  if config.cuda:
+        #  model.cuda()
 
-    # define loss function (criterion) and optimizer
-    # criterion = nn.CrossEntropyLoss().cuda()
-    train_criterion = cross_entropy_onehot
-    val_criterion = nn.CrossEntropyLoss().cuda()
+    #  # define loss function (criterion) and optimizer
+    #  # criterion = nn.CrossEntropyLoss().cuda()
+    #  train_criterion = cross_entropy_onehot
+    #  val_criterion = nn.CrossEntropyLoss().cuda()
 
-    optimizer = optim.SGD(model.parameters(), lr=config.lr,
-                          momentum=config.momentum,
-                          weight_decay=config.weight_decay)
+    #  optimizer = optim.SGD(model.parameters(), lr=config.lr,
+                          #  momentum=config.momentum,
+                          #  weight_decay=config.weight_decay)
 
-    cudnn.benchmark = True
+    #  cudnn.benchmark = True
 
-    train_all_data(model, train_criterion, optimizer, train_loader, config, foldNum)
+    #  train_all_data(model, train_criterion, optimizer, train_loader, config, foldNum)
 
-    time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time() - end))
-    logging.info("--------------Time on fold {}: {}--------------\n"
-                 .format(foldNum, time_on_fold))
+    #  time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time() - end))
+    #  logging.info("--------------Time on fold {}: {}--------------\n"
+                 #  .format(foldNum, time_on_fold))
 
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "4"
     DEBUG = False
+    #  DEBUG = True
 
     config = Config(sampling_rate=22050,
                     audio_duration=1.5,
                     batch_size=128,
                     n_folds=5,
-                    data_dir="../mfcc+delta_w80_s10_m64",
-                    model_dir='../model/mixup_mfcc_delta_resnext101_32x4d',
-                    prediction_dir='../prediction/mixup_mfcc_delta_resnext101_32x4d',
-                    arch='resnext101_32x4d_',
+                    data_dir="../logmel+delta_w80_s10_m64",
+                    model_dir='../model/mixup_logmel_delta_dpn107',
+                    prediction_dir='../prediction/mixup_logmel_delta_dpn107',
+                    arch='dpn107_',
                     lr=0.01,
-                    pretrain='imagenet',
+                    pretrain='imagenet+5k',
                     epochs=100)
 
     # create log
