@@ -94,10 +94,10 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
             input, target = input.cuda(), target.cuda(non_blocking=True)
 
         # compute output
-        # print("input:", input.size(), input.type())  # ([batch_size, 1, 64, 150])
+        #  print("input:", input.size(), input.type())  # ([batch_size, 1, 64, 150])
         output = model(input)
-        # print("output:", output.size(), output.type())  # ([bs, 41])
-        # print("target:", target.size(), target.type())  # ([bs, 41])
+        #  print("output:", output.size(), output.type())  # ([bs, 41])
+        #  print("target:", target.size(), target.type())  # ([bs, 41])
         loss = criterion(output, target)
 
         # measure accuracy and record loss
