@@ -80,8 +80,9 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
 
-        one_hot_label = make_one_hot(target)
-        input, target = mixup(input, one_hot_label, alpha=3)
+        if config.mixup:
+            one_hot_label = make_one_hot(target)
+            input, target = mixup(input, one_hot_label, alpha=3)
 
         # measure data loading time
         data_time.update(time.time() - end)
@@ -90,17 +91,17 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
             input, target = input.cuda(), target.cuda(non_blocking=True)
 
         # compute output
-        # print("input:", input.size(), input.type())  # ([batch_size, 1, 64, 150])
+        #  print("input:", input.size(), input.type())  # ([batch_size, 1, 64, 150])
         output = model(input)
-        # print("output:", output.size(), output.type())  # ([bs, 41])
-        # print("target:", target.size(), target.type())  # ([bs])
+        #  print("output:", output.size(), output.type())  # ([bs, 41])
+        #  print("target:", target.size(), target.type())  # ([bs])
         loss = criterion(output, target)
 
         # measure accuracy and record loss
-        prec1, prec3 = accuracy(output, target, topk=(1, 3))
+        #  prec1, prec3 = accuracy(output, target, topk=(1, 3))
         losses.update(loss.item(), input.size(0))
-        top1.update(prec1[0], input.size(0))
-        top3.update(prec3[0], input.size(0))
+        #  top1.update(prec1[0], input.size(0))
+        #  top3.update(prec3[0], input.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -115,12 +116,10 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
             logging.info('F{fold} E{epoch} lr:{lr:.4g} '
                   'Time {batch_time.val:.1f}({batch_time.avg:.1f}) '
                   'Data {data_time.val:.1f}({data_time.avg:.1f}) '
-                  'Loss {loss.avg:.2f} '
-                  'Prec@1 {top1.val:.2f}({top1.avg:.2f}) '
-                  'Prec@3 {top3.val:.2f}({top3.avg:.2f})'.format(
+                  'Loss {loss.avg:.2f}'.format(
                 i, len(train_loader), fold=fold, epoch=epoch,
                 lr=optimizer.param_groups[0]['lr'], batch_time=batch_time,
-                data_time=data_time, loss=losses, top1=top1, top3=top3))
+                data_time=data_time, loss=losses))
 
     return top1.avg, top3.avg
 
@@ -311,8 +310,7 @@ def mixup(data, one_hot_labels, alpha=1):
 
     weights = torch.from_numpy(weights).type(torch.FloatTensor)
 
-    print('Mixup weights', weights)
-    #     print('Mixup weights', weights)
+    #  print('Mixup weights', weights)
     index = np.random.permutation(batch_size)
     #     print(index)
     x1, x2 = data, data[index]
@@ -330,7 +328,5 @@ def mixup(data, one_hot_labels, alpha=1):
 
     for i in range(batch_size):
         y[i] = y1[i] * weights[i] + y2[i] * (1 - weights[i])
-    print(x)
-    print(y)
 
     return x, y

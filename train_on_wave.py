@@ -10,7 +10,7 @@ import time
 
 def main():
 
-    train = pd.read_csv('../train.csv')
+    train = pd.read_csv('../input/train.csv')
 
     LABELS = list(train.label.unique())
     # ['Hi-hat', 'Saxophone', 'Trumpet', 'Glockenspiel', 'Cello', 'Knock',
@@ -58,7 +58,7 @@ def main():
             model.cuda()
 
         # define loss function (criterion) and optimizer
-        if MIXUP:
+        if config.mixup:
             train_criterion = cross_entropy_onehot
         else:
             train_criterion = nn.CrossEntropyLoss().cuda()
@@ -67,7 +67,7 @@ def main():
         optimizer = optim.SGD(model.parameters(), lr=config.lr,
                               momentum=config.momentum,
                               weight_decay=config.weight_decay)
-        # optimizer = optim.Adam(model.parameters(), lr=config.lr)
+        #  optimizer = optim.Adam(model.parameters(), lr=config.lr)
 
         cudnn.benchmark = True
 
@@ -119,7 +119,7 @@ def main():
 
 if __name__ == "__main__":
     os.environ['CUDA_VISIBLE_DEVICES'] = "1"
-    MIXUP = True
+    
     # config = Config(debug=False,
     #                 sampling_rate=22050,
     #                 audio_duration=2,
@@ -130,16 +130,17 @@ if __name__ == "__main__":
     #                 epochs=50)
 
     config = Config(debug=False,
+                    mixup=False,
                     n_folds=5,
                     sampling_rate=44100,
                     audio_duration=1.5,
-                    batch_size=16,
+                    batch_size=32,
                     data_dir="../data-44100",
-                    arch='waveResnext101_32x4d',
-                    model_dir='../model/waveResnext101_32x4d_test64',
-                    prediction_dir='../prediction/waveResnext101_32x4d_test64',
+                    arch='waveResnet101',
+                    model_dir='../model/waveResnet101',
+                    prediction_dir='../prediction/waveResnet101',
                     lr=0.01,
-                    pretrain='imagenet',
+                    pretrain='True',
                     print_freq=60,
                     epochs=50)
 

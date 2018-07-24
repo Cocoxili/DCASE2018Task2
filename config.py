@@ -13,6 +13,7 @@ class Config(object):
                  momentum=0.9, weight_decay=0.0005,
                  n_folds=5, lr=0.01,
                  n_mels=64, frame_weigth=40, frame_shift=10,
+                 mixup=False,
                  debug=False):
 
         self.labels = ['Hi-hat', 'Saxophone', 'Trumpet', 'Glockenspiel', 'Cello', 'Knock',
@@ -50,6 +51,7 @@ class Config(object):
         self.frame_shift = frame_shift
         self.hop_length = int(frame_shift / 1000 * sampling_rate)
 
+        self.mixup = mixup
         self.debug = debug
 
 

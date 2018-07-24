@@ -187,16 +187,16 @@ def predict():
     Save test predictions.
     """
 
-    # for i in range(config.n_folds):
-    #     ckp = config.model_dir + '/model_best.'+ str(i) + '.pth.tar'
-    #     # prediction = predict_one_model_with_logmel(ckp, i)
-    #     prediction = predict_one_model_with_wave(ckp)
-    #     torch.save(prediction, config.prediction_dir + '/prediction_'+str(i)+'.pt')
+    for i in range(config.n_folds):
+       ckp = config.model_dir + '/model_best.'+ str(i) + '.pth.tar'
+       # prediction = predict_one_model_with_logmel(ckp, i)
+       prediction = predict_one_model_with_wave(ckp)
+       torch.save(prediction, config.prediction_dir + '/prediction_'+str(i)+'.pt')
 
-    ckp = config.model_dir + '/model_best.6.pth.tar'
-    # prediction = predict_one_model_with_logmel(ckp, i)
-    prediction = predict_one_model_with_wave(ckp)
-    torch.save(prediction, config.prediction_dir + '/prediction_5.pt')
+    #  ckp = config.model_dir + '/model_best.6.pth.tar'
+    #  prediction = predict_one_model_with_logmel(ckp, i)
+    #  prediction = predict_one_model_with_wave(ckp)
+    #  torch.save(prediction, config.prediction_dir + '/prediction_5.pt')
 
 def txt2tensor():
     filePath = '/home/zbq/work/Kaggle/freesound-audio-tagging/prediction/lj_lcnn'
@@ -272,9 +272,13 @@ def ensemble():
     return prediction
 
 
-def make_a_submission_file(prediction):
-
-    test_set = pd.read_csv('../sample_submission.csv')
+def make_a_submission_file():
+    
+    prediction = pd.read_csv(os.path.join(config.prediction_dir, 'test_predictions.csv'), header=None)
+    print(prediction)
+    prediction = prediction[prediction.columns[1:]].values
+    print(prediction)
+    test_set = pd.read_csv('../input/sample_submission.csv')
     result_path = './sbm.csv'
     top_3 = np.array(config.labels)[np.argsort(-prediction, axis=1)[:, :3]]
     # top_3 = np.argsort(-output, axis=1)[:, :3]
@@ -363,7 +367,7 @@ def make_prediction_files(input, mean_method='arithmetic'):
 
     # make train prediction
 
-    train = pd.read_csv('../train.csv')
+    train = pd.read_csv('../input/train.csv')
 
     # train = train[:100] # for debug
 
@@ -397,13 +401,12 @@ def make_prediction_files(input, mean_method='arithmetic'):
         predictions = np.concatenate((predictions, pred.cpu().numpy()))
 
     predictions = predictions[1:]
-    # print(predictions, np.sum(predictions, axis=1))
     save_to_csv(file_names, predictions, 'train_predictions.csv')
 
-    # make test prediction
-    test_set = pd.read_csv('../sample_submission.csv')
+    #  make test prediction
+    test_set = pd.read_csv('../input/sample_submission.csv')
 
-    # test_set = test_set[:50] # for debug
+    test_set = test_set[:50] # for debug
 
     test_set.set_index("fname")
     frame = test_set
@@ -482,9 +485,9 @@ if __name__ == "__main__":
                     audio_duration=1.5,
                     batch_size=16,
                     data_dir="../data-44100",
-                    arch='waveResnext101_32x4d',
-                    model_dir='../model/waveResnext101_32x4d',
-                    prediction_dir='../prediction/waveResnext101_32x4d',
+                    arch='waveResnet101',
+                    model_dir='../model/mixup_waveResnet101_adam',
+                    prediction_dir='../prediction/mixup_waveResnet101_adam',
                     lr=0.01,
                     pretrain='imagenet',
                     print_freq=60,
@@ -492,7 +495,8 @@ if __name__ == "__main__":
 
 
     # test()
-    make_prediction_files(input='wave', mean_method='arithmetic')
+    #  make_prediction_files(input='wave', mean_method='arithmetic')
     # tensor = txt2tensor()
-    # prediction = ensemble()
-    # make_a_submission_file(prediction)
+    #  predict()
+    #  prediction = ensemble()
+    make_a_submission_file()

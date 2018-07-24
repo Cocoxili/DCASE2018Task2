@@ -142,8 +142,7 @@ def make_dirs():
     # log_dir = '../log'
     # model_dir = '../model_dir'
     # submission_dir = '../submission_dir'
-    dirs = ['../data-22050', '../prediction', '../log', '../model',
-            '../model', '../submission']
+    dirs = ['../data-44100', '../prediction', '../log', '../model']
 
     for dir in dirs:
         if not os.path.exists(dir):
