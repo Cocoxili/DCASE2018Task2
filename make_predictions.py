@@ -5,39 +5,6 @@ from network import *
 from tqdm import tqdm
 import torch.nn.functional as F
 
-# def predict_one_model(checkpoint, data_loader):
-#
-#     print("=> loading checkpoint '{}'".format(checkpoint))
-#     checkpoint = torch.load(checkpoint)
-#
-#     best_prec1 = checkpoint['best_prec1']
-#     model = checkpoint['model']
-#     model = model.cuda()
-#
-#     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
-#
-#     if config.cuda is True:
-#         model.cuda()
-#     model.eval()
-#
-#     prediction = torch.zeros((1, 41)).cuda()
-#     with torch.no_grad():
-#         for input in tqdm(data_loader):
-#
-#             if config.cuda:
-#                 input = input.cuda()
-#
-#             # compute output
-#             # print("input size:", input.size())
-#             output = model(input)
-#             output = F.softmax(output, dim=1)
-#             # print(output.size())
-#             # print(output.type())
-#             prediction = torch.cat((prediction, output), dim=0)
-#
-#     prediction = prediction[1:].cpu().numpy()
-#     return prediction
-
 
 def predict_one_model_with_wave(checkpoint, frame):
 
@@ -51,10 +18,6 @@ def predict_one_model_with_wave(checkpoint, frame):
     model = model.cuda()
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
-
-    # test_set = pd.read_csv('../sample_submission.csv')
-    # test_set.set_index("fname")
-    # frame = test_set
 
     win_size = config.audio_length
     stride = int(config.sampling_rate * 0.2)
@@ -119,16 +82,12 @@ def predict_one_model_with_logmel(checkpoint, frame):
     checkpoint = torch.load(checkpoint)
 
     best_prec1 = checkpoint['best_prec1']
-    model = checkpoint['model']
-    # model = run_method_by_string(config.arch)(pretrained=config.pretrain)
-    # model.load_state_dict(checkpoint['state_dict'])
+    #  model = checkpoint['model']
+    model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    model.load_state_dict(checkpoint['state_dict'])
     model = model.cuda()
 
     print("=> loaded checkpoint, best_prec1: {:.2f}".format(best_prec1))
-
-    # test_set = pd.read_csv('../sample_submission.csv')
-    # test_set.set_index("fname")
-    # frame = test_set
 
     input_frame_length = int(config.audio_duration * 1000 / config.frame_shift)
     stride = 20
@@ -140,6 +99,7 @@ def predict_one_model_with_logmel(checkpoint, frame):
 
     prediction = torch.zeros((1, 41)).cuda()
 
+    file_names = []
     with torch.no_grad():
 
         for idx in tqdm(range(frame.shape[0])):
@@ -178,8 +138,10 @@ def predict_one_model_with_logmel(checkpoint, frame):
 
             prediction = torch.cat((prediction, output), dim=0)
 
+            file_names.append(frame["fname"][idx])
+    
     prediction = prediction[1:]
-    return prediction
+    return file_names, prediction
 
 
 def predict():
@@ -197,39 +159,6 @@ def predict():
     #  prediction = predict_one_model_with_logmel(ckp, i)
     #  prediction = predict_one_model_with_wave(ckp)
     #  torch.save(prediction, config.prediction_dir + '/prediction_5.pt')
-
-def txt2tensor():
-    filePath = '/home/zbq/work/Kaggle/freesound-audio-tagging/prediction/lj_lcnn'
-    import glob
-    dataDictList = []
-    for files in glob.glob(os.path.join(filePath, '*.txt')):
-        f = open(files, 'r')
-        dataDict = {}
-        for id_, line in enumerate(f.readlines()):
-            line = line.split('\n')[0].strip().split()
-            data = []
-            for item in line:
-                data.append(float(item))
-            data = np.asarray(data, dtype=np.float32)
-            dataDict[id_] = data
-        dataDictList.append(dataDict)
-    # print("dataDictList: ", len(dataDictList))
-
-    dataNumpy = []
-    for id_ in range(9400):
-        dataList = []
-        for dataDict in dataDictList:
-            dataList.append(dataDict[id_])
-        data = np.asarray(dataList, dtype=np.float32)
-        data = data.mean(axis=0)
-        dataNumpy.append(data)
-
-    dataNumpy = np.asarray(dataNumpy, dtype=np.float32)
-    # print("dataNumpy: ", dataNumpy.shape)
-    # print("dataSum: ", dataNumpy[0, :])
-    dataTensor = torch.from_numpy(dataNumpy).type(torch.FloatTensor).cuda()
-    # print("dataTensor: ", dataTensor.size())
-    return dataTensor
 
 
 def ensemble():
@@ -275,83 +204,16 @@ def ensemble():
 def make_a_submission_file():
     
     prediction = pd.read_csv(os.path.join(config.prediction_dir, 'test_predictions.csv'), header=None)
-    print(prediction)
     prediction = prediction[prediction.columns[1:]].values
-    print(prediction)
     test_set = pd.read_csv('../input/sample_submission.csv')
-    result_path = './sbm.csv'
+    result_path = os.path.join(config.prediction_dir, 'sbm.csv')
     top_3 = np.array(config.labels)[np.argsort(-prediction, axis=1)[:, :3]]
-    # top_3 = np.argsort(-output, axis=1)[:, :3]
     predicted_labels = [' '.join(list(x)) for x in top_3]
     test_set['label'] = predicted_labels
     test_set.set_index("fname", inplace=True)
     test_set[['label']].to_csv(result_path)
     print('Result saved as %s' % result_path)
 
-
-# def make_prediction_files():
-#
-#     model_dir = '../model/wave1d/'
-#     prediction_dir = '../prediction/wave1d'
-#     # make train prediction
-#     train = pd.read_csv('../train.csv')
-#
-#     LABELS = list(train.label.unique())
-#
-#     label_idx = {label: i for i, label in enumerate(LABELS)}
-#     train.set_index("fname")
-#
-#     train["label_idx"] = train.label.apply(lambda x: label_idx[x])
-#
-#     skf = StratifiedKFold(n_splits=config.n_folds)
-#
-#     predictions = np.zeros((1, 41))
-#
-#     for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
-#         train_set = train.iloc[train_split]
-#         train_set = train_set.reset_index(drop=True)
-#         val_set = train.iloc[val_split]
-#         val_set = val_set.reset_index(drop=True)
-#         logging.info("Fold {0}, Train samples:{1}, val samples:{2}"
-#               .format(foldNum, len(train_set), len(val_set)))
-#
-#         # define train loader and val loader
-#         # valSet = Freesound_logmel(config=config, frame=val_set,
-#         #                      transform=transforms.Compose([ToTensor()]),
-#         #                      mode="test")
-#         #
-#         # val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-#
-#         valSet = Freesound(config=config, frame=val_set, mode="test")
-#
-#         val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-#
-#         train_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%foldNum)
-#
-#         predictions = np.concatenate((predictions, predict_one_model(train_model, val_loader)))
-#
-#     predictions = predictions[1:]
-#     # print(predictions, np.sum(predictions, axis=1))
-#     np.save(os.path.join(prediction_dir, 'train_predictions.npy'), predictions)
-#
-#     # make test prediction
-#     test_set = pd.read_csv('../sample_submission.csv')
-#
-#     # testSet = Freesound_logmel(config=config, frame=test_set,
-#     #                     transform=transforms.Compose([ToTensor()]),
-#     #                     mode="test")
-#     # test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-#
-#     testSet = Freesound(config=config, frame=test_set, mode="test")
-#
-#     test_loader = DataLoader(testSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
-#
-#     test_model = os.path.join(model_dir, 'model_best.%d.pth.tar'%(config.n_folds+1))
-#
-#     predictions = np.zeros((1, 41))
-#     predictions = np.concatenate((predictions, predict_one_model(test_model, test_loader)))
-#     predictions = predictions[1:]
-#     np.save(os.path.join(prediction_dir, 'test_predictions.npy'), predictions)
 
 
 def make_prediction_files(input, mean_method='arithmetic'):
@@ -406,7 +268,7 @@ def make_prediction_files(input, mean_method='arithmetic'):
     #  make test prediction
     test_set = pd.read_csv('../input/sample_submission.csv')
 
-    test_set = test_set[:50] # for debug
+    #  test_set = test_set[:50] # for debug
 
     test_set.set_index("fname")
     frame = test_set
@@ -465,38 +327,37 @@ def test():
 
 if __name__ == "__main__":
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "2"
 
-    # config = Config(sampling_rate=22050,
-    #                 audio_duration=1.5,
-    #                 batch_size=128,
-    #                 n_folds=5,
-    #                 data_dir="../logmel+delta_w80_s10_m64",
-    #                 model_dir='../model/mixup_logmel_delta_resnext101_32x4d',
-    #                 prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d',
-    #                 arch='resnext101_32x4d_',
-    #                 lr=0.01,
-    #                 pretrain='imagenet',
-    #                 epochs=100)
+    config = Config(sampling_rate=22050,
+                   audio_duration=1.5,
+                   batch_size=128,
+                   n_folds=5,
+                   data_dir="../logmel+delta_w80_s10_m64",
+                   model_dir='../model/mixup_logmel_delta_dpn98',
+                   prediction_dir='../prediction/mixup_logmel_delta_dpn98',
+                   arch='dpn98_',
+                   lr=0.01,
+                   pretrain='imagenet',
+                   epochs=100)
 
-    config = Config(debug=False,
-                    n_folds=5,
-                    sampling_rate=44100,
-                    audio_duration=1.5,
-                    batch_size=16,
-                    data_dir="../data-44100",
-                    arch='waveResnet101',
-                    model_dir='../model/mixup_waveResnet101_adam',
-                    prediction_dir='../prediction/mixup_waveResnet101_adam',
-                    lr=0.01,
-                    pretrain='imagenet',
-                    print_freq=60,
-                    epochs=50)
+    #  config = Config(debug=False,
+                    #  n_folds=5,
+                    #  sampling_rate=44100,
+                    #  audio_duration=1.5,
+                    #  batch_size=16,
+                    #  data_dir="../data-44100",
+                    #  arch='waveResnet101',
+                    #  model_dir='../model/mixup_waveResnet101_adam',
+                    #  prediction_dir='../prediction/mixup_waveResnet101_adam',
+                    #  lr=0.01,
+                    #  pretrain='imagenet',
+                    #  print_freq=60,
+                    #  epochs=50)
 
 
     # test()
-    #  make_prediction_files(input='wave', mean_method='arithmetic')
-    # tensor = txt2tensor()
+    make_prediction_files(input='logmel', mean_method='arithmetic')
     #  predict()
     #  prediction = ensemble()
     make_a_submission_file()
