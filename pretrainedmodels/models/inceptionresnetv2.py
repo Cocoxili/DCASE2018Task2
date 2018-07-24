@@ -319,11 +319,8 @@ class InceptionResNetV2(nn.Module):
         return x
 
     def logits(self, features):
-        print("1:", x.size())
         x = self.avgpool_1a(features)
-        print("2:", x.size())
         x = x.view(x.size(0), -1)
-        print("3:", x.size())
         x = self.last_linear(x) 
         return x
 
