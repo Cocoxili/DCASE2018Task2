@@ -34,8 +34,11 @@ def main():
 
     skf = StratifiedKFold(n_splits=config.n_folds)
 
+    cnt = 0
     for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
-
+        cnt = cnt + 1
+        if cnt == 3:
+            break
         end = time.time()
         # split the dataset for cross-validation
         train_set = train.iloc[train_split]
@@ -120,7 +123,7 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "4"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
     DEBUG = False
     #  DEBUG = True
 
@@ -129,9 +132,9 @@ if __name__ == "__main__":
                     batch_size=128,
                     n_folds=5,
                     data_dir="../logmel+delta_w80_s10_m64",
-                    model_dir='../model/mixup_logmel_delta_dpn98_nopretrained',
-                    prediction_dir='../prediction/mixup_logmel_delta_dpn98_nopretrained',
-                    arch='dpn98_',
+                    model_dir='../model/mixup_logmel_delta_resnext101_32x4d_nopretrained',
+                    prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d_nopretrained',
+                    arch='resnext101_32x4d_',
                     lr=0.01,
                     pretrain=None,
                     epochs=100)
