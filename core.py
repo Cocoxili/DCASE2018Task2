@@ -93,7 +93,7 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
         if config.cuda:
             input, target = input.cuda(), target.cuda(non_blocking=True)
 
-        # compute output
+        # Compute output
         #  print("input:", input.size(), input.type())  # ([batch_size, 1, 64, 150])
         output = model(input)
         #  print("output:", output.size(), output.type())  # ([bs, 41])
@@ -106,12 +106,12 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
         # top1.update(prec1[0], input.size(0))
         # top3.update(prec3[0], input.size(0))
 
-        # compute gradient and do SGD step
+        # Compute gradient and do SGD step
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-        # measure elapsed time
+        # Measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
 
@@ -231,12 +231,9 @@ def val_on_file_wave(model, config, frame):
             top1.update(prec1[0], data.size(0))
             top3.update(prec3[0], data.size(0))
 
-        # test_acc = 100. * correct / frame.shape[0]
 
         elapse = time.strftime('%Mm:%Ss', time.gmtime(time.time() - start))
 
-        # logging.info(' Test acc {test_acc} Time: {elapse}'
-        #              .format(test_acc=test_acc, elapse=elapse))
         logging.info(' Test on file: Prec@1 {top1.avg:.3f} Prec@3 {top3.avg:.3f} Time: {elapse}'
               .format(top1=top1, top3=top3, elapse=elapse))
         # return top1.avg, top3.avg
@@ -312,16 +309,14 @@ def mixup(data, one_hot_labels, alpha=1):
 
     weights = torch.from_numpy(weights).type(torch.FloatTensor)
 
-    #     print('Mixup weights', weights)
+    #  print('Mixup weights', weights)
     index = np.random.permutation(batch_size)
-    #     print(index)
     x1, x2 = data, data[index]
 
     x = torch.zeros_like(x1)
     for i in range(batch_size):
         for c in range(x.size()[1]):
             x[i][c] = x1[i][c] * weights[i] + x2[i][c] * (1 - weights[i])
-            #     print(x)
 
     y1 = one_hot_labels
     y2 = one_hot_labels[index]
@@ -330,5 +325,4 @@ def mixup(data, one_hot_labels, alpha=1):
 
     for i in range(batch_size):
         y[i] = y1[i] * weights[i] + y2[i] * (1 - weights[i])
-
     return x, y

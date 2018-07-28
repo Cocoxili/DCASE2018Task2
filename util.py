@@ -120,15 +120,8 @@ def save_checkpoint(state, is_best, fold, config, filename='../model/checkpoint.
     torch.save(state, filename)
     if is_best:
         best_name = config.model_dir + '/model_best.' + str(fold) + '.pth.tar'
-        # best_name = '../model/mixup_logmel_delta_resnext101_64x4d/model_best.' + str(fold) + '.pth.tar'
         shutil.copyfile(filename, best_name)
 
-    # def make_submission():
-#     # Make a submission file
-#     top_3 = np.array(LABELS)[np.argsort(-predictions, axis=1)[:, :3]]
-#     predicted_labels = [' '.join(list(x)) for x in top_3]
-#     test['label'] = predicted_labels
-#     test[['label']].to_csv(PREDICTION_FOLDER + "/predictions_%d.csv"%i)
 
 def run_method_by_string(name):
     p = globals().copy()
@@ -140,11 +133,6 @@ def run_method_by_string(name):
 
 
 def make_dirs():
-    # data_dir = '../data-22050'
-    # prediction_dir = '../prediction_dir'
-    # log_dir = '../log'
-    # model_dir = '../model_dir'
-    # submission_dir = '../submission_dir'
     dirs = ['../data-22050', '../prediction', '../log', '../model',
             '../model', '../submission']
 
