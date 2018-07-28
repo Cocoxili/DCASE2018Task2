@@ -327,18 +327,18 @@ def test():
 
 if __name__ == "__main__":
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = "2"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "3"
 
     config = Config(sampling_rate=22050,
                    audio_duration=1.5,
                    batch_size=128,
                    n_folds=5,
                    data_dir="../logmel+delta_w80_s10_m64",
-                   model_dir='../model/mixup_logmel_delta_dpn98',
-                   prediction_dir='../prediction/mixup_logmel_delta_dpn98',
-                   arch='dpn98_',
+                   model_dir='../model/mixup_logmel_delta_dpn107',
+                   prediction_dir='../prediction/mixup_logmel_delta_dpn107',
+                   arch='dpn107_',
                    lr=0.01,
-                   pretrain='imagenet',
+                   pretrain='imagenet+5k',
                    epochs=100)
 
     #  config = Config(debug=False,

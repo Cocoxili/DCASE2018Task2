@@ -129,11 +129,11 @@ if __name__ == "__main__":
                     batch_size=128,
                     n_folds=5,
                     data_dir="../logmel+delta_w80_s10_m64",
-                    model_dir='../model/mixup_logmel_delta_dpn107',
-                    prediction_dir='../prediction/mixup_logmel_delta_dpn107',
-                    arch='dpn107_',
+                    model_dir='../model/mixup_logmel_delta_dpn98_nopretrained',
+                    prediction_dir='../prediction/mixup_logmel_delta_dpn98_nopretrained',
+                    arch='dpn98_',
                     lr=0.01,
-                    pretrain='imagenet+5k',
+                    pretrain=None,
                     epochs=100)
 
     # create log
