@@ -12,6 +12,12 @@ librosa 0.5.1
 
 torchvision 0.2.1
 
+
+### Data
+
+From Kaggle competition https://www.kaggle.com/c/freesound-audio-tagging/data
+
+
 ### Run:
 
 实例化 Config 类, 设置参数.
