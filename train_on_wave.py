@@ -118,7 +118,7 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "5"
     
     # config = Config(debug=False,
     #                 sampling_rate=22050,
@@ -136,11 +136,11 @@ if __name__ == "__main__":
                     audio_duration=1.5,
                     batch_size=32,
                     data_dir="../data-44100",
-                    arch='waveResnet101',
-                    model_dir='../model/waveResnet101',
-                    prediction_dir='../prediction/waveResnet101',
+                    arch='waveResnext101_32x4d',
+                    model_dir='../model/waveResnext101_32x4d',
+                    prediction_dir='../prediction/waveResnext101_32x4d',
                     lr=0.01,
-                    pretrain='True',
+                    pretrain='imagenet',
                     print_freq=60,
                     epochs=50)
 
