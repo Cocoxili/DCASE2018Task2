@@ -131,6 +131,7 @@ def dpn98_(num_classes=41, pretrained='imagenet'):
         model.classifier = nn.Conv2d(2688, num_classes, kernel_size=1, bias=True)
     return model
 
+
 def dpn107_(num_classes=41, pretrained='imagenet+5k'):
     model = DPN(
         num_init_features=128, k_r=200, groups=50,
