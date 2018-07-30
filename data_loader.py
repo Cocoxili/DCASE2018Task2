@@ -145,11 +145,13 @@ class ToTensor(object):
 
 if __name__ == "__main__":
     # config = Config(sampling_rate=44100, audio_duration=1.5, data_dir="../data-22050")
-    config = Config(sampling_rate=22050, audio_duration=1.5, data_dir="../mfcc+delta_w80_s10_m64")
+    config = Config(sampling_rate=22050,
+                    audio_duration=1.5, 
+                    data_dir="../logmel+delta_w80_s10_m64")
     DEBUG = True
 
-    train = pd.read_csv('../train.csv')
-    test = pd.read_csv('../sample_submission.csv')
+    train = pd.read_csv('../input/train.csv')
+    test = pd.read_csv('../input/sample_submission.csv')
 
     LABELS = config.labels
     # LABELS = list(train.label.unique())
@@ -182,6 +184,8 @@ if __name__ == "__main__":
         print(len(train_set), len(val_set))
 
         print(train_set)
+        train_set_verified = train_set.loc[train_set['manually_verified']==1]
+        print(train_set_verified)
         trainSet = Freesound_logmel(config=config, frame=train_set,
                              transform=transforms.Compose([ToTensor()]),
                              mode="train")
