@@ -34,11 +34,8 @@ def main():
 
     skf = StratifiedKFold(n_splits=config.n_folds)
 
-    cnt = 0
     for foldNum, (train_split, val_split) in enumerate(skf.split(train, train.label_idx)):
-        cnt = cnt + 1
-        if cnt == 3:
-            break
+
         end = time.time()
         # split the dataset for cross-validation
         train_set = train.iloc[train_split]
@@ -61,7 +58,6 @@ def main():
         val_loader = DataLoader(valSet, batch_size=config.batch_size, shuffle=False, num_workers=4)
 
         model = run_method_by_string(config.arch)(pretrained=config.pretrain)
-
 
         if config.cuda:
             model.cuda()
