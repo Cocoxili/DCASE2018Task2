@@ -145,7 +145,9 @@ class ToTensor(object):
 
 if __name__ == "__main__":
     # config = Config(sampling_rate=44100, audio_duration=1.5, data_dir="../data-22050")
-    config = Config(sampling_rate=22050, audio_duration=1.5, data_dir="../mfcc+delta_w80_s10_m64")
+    config = Config(sampling_rate=22050,
+                    audio_duration=1.5,
+                    data_dir="../input/logmel+delta_w80_s10_m64")
     DEBUG = True
 
     train = pd.read_csv('../input/train.csv')
