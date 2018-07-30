@@ -83,9 +83,9 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
 
-        one_hot_labels = make_one_hot(target)
-        # print("target: ", target)
-        input, target = mixup(input, one_hot_labels, alpha=3)
+        if config.mixup:
+            one_hot_labels = make_one_hot(target)
+            input, target = mixup(input, one_hot_labels, alpha=3)
 
         # measure data loading time
         data_time.update(time.time() - end)

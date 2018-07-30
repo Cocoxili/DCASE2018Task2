@@ -7,7 +7,7 @@ import torch.backends.cudnn as cudnn
 
 import time
 
-# np.random.seed(1001)
+np.random.seed(1001)
 
 
 def main():
@@ -63,8 +63,11 @@ def main():
             model.cuda()
 
         # define loss function (criterion) and optimizer
-        # criterion = nn.CrossEntropyLoss().cuda()
-        train_criterion = cross_entropy_onehot
+        if config.mixup:
+            train_criterion = cross_entropy_onehot
+        else:
+            train_criterion = nn.CrossEntropyLoss().cuda()
+
         val_criterion = nn.CrossEntropyLoss().cuda()
 
         optimizer = optim.SGD(model.parameters(), lr=config.lr,
@@ -119,7 +122,7 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
     DEBUG = False
     #  DEBUG = True
 
@@ -128,12 +131,14 @@ if __name__ == "__main__":
                     batch_size=128,
                     n_folds=5,
                     data_dir="../logmel+delta_w80_s10_m64",
-                    model_dir='../model/mixup_logmel_delta_resnext101_32x4d_nopretrained',
-                    prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d_nopretrained',
-                    arch='resnext101_32x4d_',
+                    model_dir='../model/logmel_delta_resnet101',
+                    prediction_dir='../prediction/logmel_delta_resnet101',
+                    arch='resnet101_mfcc',
                     lr=0.01,
-                    pretrain=None,
-                    epochs=100)
+                    pretrain=True,
+                    mixup=False,
+                    #  epochs=100)
+                    epochs=50)
 
     # create log
     logging = create_logging('../log', filemode='a')

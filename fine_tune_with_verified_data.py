@@ -79,7 +79,7 @@ def fine_tune():
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "5"
     DEBUG = False
     #  DEBUG = True
 
@@ -98,9 +98,9 @@ if __name__ == '__main__':
                     epochs=20)
 
     # create log
-    logging = create_logging('../log', filemode='a')
-    logging.info(os.path.abspath(__file__))
-    attrs = '\n'.join('%s:%s' % item for item in vars(config).items())
-    logging.info(attrs)
+    #  logging = create_logging('../log', filemode='a')
+    #  logging.info(os.path.abspath(__file__))
+    #  attrs = '\n'.join('%s:%s' % item for item in vars(config).items())
+    #  logging.info(attrs)
 
     fine_tune()
