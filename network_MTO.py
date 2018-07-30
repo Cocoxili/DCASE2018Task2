@@ -194,15 +194,15 @@ class WaveResNet(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
         self.avgpool = nn.AvgPool2d((3, 14), stride=(1, 1))
-        self.fc = nn.Linear(512 * block.expansion, 50)
-
+        self.fc = nn.Linear(512 * block.expansion, 41)
+        
         for m in self.children():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+           if isinstance(m, nn.Conv2d):
+               n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+               m.weight.data.normal_(0, math.sqrt(2. / n))
+           elif isinstance(m, nn.BatchNorm2d):
+               m.weight.data.fill_(1)
+               m.bias.data.zero_()
 
 
 
@@ -228,7 +228,8 @@ class WaveResNet(nn.Module):
         x3 = torch.unsqueeze(x3, 1)  # (batchSize, 1L, 32L, 441L)
 
         x = torch.cat((x1, x2, x3), dim=2) #(batchSize, 1L, 96L, 441L)
-        # x = torch.cat((x, x), dim=1)  # (batchSize, 2L, 96L, 441L)
+        #  x = torch.cat((x1, x2, x3), dim=1)  # (batchSize, 2L, 96L, 441L)
+
 
         x = self.conv0(x)
         x = self.bn0(x)

@@ -5,6 +5,7 @@ from torch.optim import lr_scheduler
 
 def train_on_fold(model, train_criterion, val_criterion,
                   optimizer, train_loader, val_loader, config, fold):
+
     model.train()
 
     best_prec1 = 0
@@ -24,18 +25,18 @@ def train_on_fold(model, train_criterion, val_criterion,
         prec1, prec3 = val_on_fold(model, val_criterion, val_loader, config, fold)
 
         # remember best prec@1 and save checkpoint
-        if config.debug == False or True:
+        if not config.debug:
             is_best = prec1 > best_prec1
             best_prec1 = max(prec1, best_prec1)
             save_checkpoint({
                 'epoch': epoch + 1,
                 'arch': config.arch,
                 # 'model': model,
-                'state_dict': model.state_dict(), # for resnext
+                'state_dict': model.state_dict(),
                 'best_prec1': best_prec1,
                 'optimizer': optimizer.state_dict(),
             }, is_best, fold, config,
-            filename=config.model_dir +'/checkpoint.pth.tar')
+            filename=config.model_dir + '/checkpoint.pth.tar')
 
     logging.info(' *** Best Prec@1 {prec1:.3f}'
               .format(prec1=best_prec1))
@@ -63,7 +64,8 @@ def train_all_data(model, train_criterion, optimizer, train_loader, config, fold
         'best_prec1': prec1,
         'optimizer': optimizer.state_dict(),
     }, True, fold, config,
-        filename=config.model_dir +'/checkpoint.pth.tar')
+        filename=config.model_dir + '/checkpoint.pth.tar')
+
 
 
 def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch):
@@ -115,7 +117,7 @@ def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epo
             logging.info('F{fold} E{epoch} lr:{lr:.4g} '
                   'Time {batch_time.val:.1f}({batch_time.avg:.1f}) '
                   'Data {data_time.val:.1f}({data_time.avg:.1f}) '
-                  'Loss {loss.avg:.2f} ' .format(
+                  'Loss {loss.avg:.2f}'.format(
                 i, len(train_loader), fold=fold, epoch=epoch,
                 lr=optimizer.param_groups[0]['lr'], batch_time=batch_time,
                 data_time=data_time, loss=losses))
@@ -190,4 +192,5 @@ def mixup(data, one_hot_labels, alpha=1):
 
     for i in range(batch_size):
         y[i] = y1[i] * weights[i] + y2[i] * (1 - weights[i])
+
     return x, y

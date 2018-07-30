@@ -8,8 +8,8 @@ from config import *
 
 
 def get_wavelist():
-    train_dir = '../audio_train'
-    test_dir = '../audio_test'
+    train_dir = '../input/audio_train'
+    test_dir = '../input/audio_test'
     waves_train = sorted(os.listdir(train_dir))
     waves_test = sorted(os.listdir(test_dir))
     print(len(waves_train)+len(waves_test))
@@ -46,9 +46,9 @@ def tsfm_wave(row):
     sr = 44100
     item = row[1]
     if item['train0/test1'] == 0:
-        file_path = os.path.join('../audio_train/', item['fname'])
+        file_path = os.path.join('../input/audio_train/', item['fname'])
     elif item['train0/test1'] == 1:
-        file_path = os.path.join('../audio_test/', item['fname'])
+        file_path = os.path.join('../input/audio_test/', item['fname'])
 
     print(row[0], file_path)
     data, _ = librosa.core.load(file_path, sr=sr, res_type='kaiser_best')
@@ -62,9 +62,9 @@ def tsfm_logmel(row):
     p_name = os.path.join('../logmel+delta_w80_s10_m64', os.path.splitext(item['fname'])[0] + '.pkl')
     if not os.path.exists(p_name):
         if item['train0/test1'] == 0:
-            file_path = os.path.join('../audio_train/', item['fname'])
+            file_path = os.path.join('../input/audio_train/', item['fname'])
         elif item['train0/test1'] == 1:
-            file_path = os.path.join('../audio_test/', item['fname'])
+            file_path = os.path.join('../input/audio_test/', item['fname'])
 
         data, sr = librosa.load(file_path, config.sampling_rate)
 
@@ -126,6 +126,6 @@ if __name__ == '__main__':
     # config2 = Config(sampling_rate=None, n_mels=64, frame_weigth=40, frame_shift=10)
     get_wavelist()
     # what kind of feature to extract? wave, logmel or MFCC?
-    # wav_to_pickle('wavelist.csv')
+    wav_to_pickle('wavelist.csv')
     # wav_to_logmel('wavelist.csv')
     # wav_to_mfcc('wavelist.csv')
