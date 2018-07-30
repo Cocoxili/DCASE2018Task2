@@ -6,7 +6,6 @@ import math
 
 
 def num_flat_features(x):
-    # (32L, 50L, 11L, 14L), 32 is batch_size
     size = x.size()[1:]  # all dimensions except the batch dimension
     num_features = 1
     for s in size:

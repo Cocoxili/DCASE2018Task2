@@ -15,14 +15,6 @@ def main():
     train = pd.read_csv('../input/train.csv')
 
     LABELS = list(train.label.unique())
-    # ['Hi-hat', 'Saxophone', 'Trumpet', 'Glockenspiel', 'Cello', 'Knock',
-    # 'Gunshot_or_gunfire', 'Clarinet', 'Computer_keyboard', 'Keys_jangling',
-    # 'Snare_drum', 'Writing', 'Laughter', 'Tearing', 'Fart', 'Oboe', 'Flute',
-    # 'Cough', 'Telephone', 'Bark', 'Chime', 'Bass_drum', 'Bus', 'Squeak',
-    # 'Scissors', 'Harmonica', 'Gong', 'Microwave_oven', 'Burping_or_eructation',
-    # 'Double_bass', 'Shatter', 'Fireworks', 'Tambourine', 'Cowbell',
-    # 'Electric_piano', 'Meow', 'Drawer_open_or_close', 'Applause', 'Acoustic_guitar',
-    # 'Violin_or_fiddle', 'Finger_snapping']
 
     label_idx = {label: i for i, label in enumerate(LABELS)}
     train.set_index("fname")
@@ -79,52 +71,50 @@ def main():
         train_on_fold(model, train_criterion, val_criterion,
                       optimizer, train_loader, val_loader, config, foldNum)
 
-        # val_on_file_logmel(model, config, val_set)
-
         time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time()-end))
         logging.info("--------------Time on fold {}: {}--------------\n"
               .format(foldNum, time_on_fold))
 
-    # train on the whole training set
-    #  foldNum = config.n_folds + 1
-    #  end = time.time()
-    #  logging.info("Fold {0}, Train samples:{1}."
-                 #  .format(foldNum, len(train)))
 
-    #  # define train loader and val loader
-    #  trainSet = Freesound_logmel(config=config, frame=train,
-                                #  transform=transforms.Compose([ToTensor()]),
-                                #  mode="train")
-    #  train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
-
-    #  model = run_method_by_string(config.arch)(pretrained=config.pretrain)
-
-    #  if config.cuda:
-        #  model.cuda()
-
-    #  # define loss function (criterion) and optimizer
-    #  # criterion = nn.CrossEntropyLoss().cuda()
-    #  train_criterion = cross_entropy_onehot
-    #  val_criterion = nn.CrossEntropyLoss().cuda()
-
-    #  optimizer = optim.SGD(model.parameters(), lr=config.lr,
-                          #  momentum=config.momentum,
-                          #  weight_decay=config.weight_decay)
-
-    #  cudnn.benchmark = True
-
-    #  train_all_data(model, train_criterion, optimizer, train_loader, config, foldNum)
-
-    #  time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time() - end))
-    #  logging.info("--------------Time on fold {}: {}--------------\n"
-                 #  .format(foldNum, time_on_fold))
-
+    # Train on the whole training set
+    # foldNum = config.n_folds
+    # end = time.time()
+    # logging.info("Fold {0}, Train samples:{1}."
+    #               .format(foldNum, len(train)))
+    #
+    # # define train loader and val loader
+    # trainSet = Freesound_logmel(config=config, frame=train,
+    #                             transform=transforms.Compose([ToTensor()]),
+    #                             mode="train")
+    # train_loader = DataLoader(trainSet, batch_size=config.batch_size, shuffle=True, num_workers=4)
+    #
+    # model = run_method_by_string(config.arch)(pretrained=config.pretrain)
+    #
+    # if config.cuda:
+    #      model.cuda()
+    #
+    # # define loss function (criterion) and optimizer
+    # if config.mixup:
+    #     train_criterion = cross_entropy_onehot
+    # else:
+    #     train_criterion = cross_entropy_onehot
+    #
+    # optimizer = optim.SGD(model.parameters(), lr=config.lr,
+    #                       momentum=config.momentum,
+    #                       weight_decay=config.weight_decay)
+    #
+    # cudnn.benchmark = True
+    #
+    # train_all_data(model, train_criterion, optimizer, train_loader, config, foldNum)
+    #
+    # time_on_fold = time.strftime('%Hh:%Mm:%Ss', time.gmtime(time.time() - end))
+    # logging.info("--------------Time on fold {}: {}--------------\n"
+    #             .format(foldNum, time_on_fold))
 
 
 if __name__ == "__main__":
     os.environ['CUDA_VISIBLE_DEVICES'] = "0"
     DEBUG = False
-    #  DEBUG = True
 
     config = Config(sampling_rate=22050,
                     audio_duration=1.5,

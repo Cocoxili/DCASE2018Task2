@@ -15,6 +15,7 @@ from network_dpn import *
 from network_xception import *
 from network_inceptionresnetv2 import *
 
+
 def save_data(filename, data):
     """Save variable into a pickle file
 
@@ -154,7 +155,6 @@ def cross_entropy_onehot(input, target, size_average=True):
     """
     Cross entropy  that accepts soft targets (like [0, 0.1, 0.1, 0.8, 0]).
     """
-    #  print(input.size(), target.size())
     assert input.size() == target.size()
 
     if size_average:

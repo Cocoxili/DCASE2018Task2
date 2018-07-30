@@ -1,9 +1,4 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torchvision import models
 import torch.utils.model_zoo as model_zoo
-import pretrainedmodels
 from pretrainedmodels.models.inceptionresnetv2 import *
 
 pretrained_settings = {

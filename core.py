@@ -1,8 +1,6 @@
 from data_loader import *
 from util import *
-
 from torch.optim import lr_scheduler
-
 
 
 def train_on_fold(model, train_criterion, val_criterion,
@@ -15,7 +13,6 @@ def train_on_fold(model, train_criterion, val_criterion,
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[10, 20, 30], gamma=0.1)  # for logmel
     # exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[60, 120, 140], gamma=0.1)  # for MTO-resnet
     exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.epochs)
-
 
     for epoch in range(config.epochs):
         exp_lr_scheduler.step()
@@ -67,7 +64,6 @@ def train_all_data(model, train_criterion, optimizer, train_loader, config, fold
         'optimizer': optimizer.state_dict(),
     }, True, fold, config,
         filename=config.model_dir +'/checkpoint.pth.tar')
-
 
 
 def train_one_epoch(train_loader, model, criterion, optimizer, config, fold, epoch):
@@ -169,137 +165,6 @@ def val_on_fold(model, criterion, val_loader, config, fold):
               .format(top1=top1, top3=top3))
 
     return top1.avg, top3.avg
-
-
-def val_on_file_wave(model, config, frame):
-    # switch to evaluate mode
-    model.eval()
-
-    win_size = config.audio_length
-    stride = int(config.sampling_rate * 0.2)
-    correct = 0
-
-    top1 = AverageMeter()
-    top3 = AverageMeter()
-
-    start = time.time()
-
-    with torch.no_grad():
-
-        for idx in tqdm(range(frame.shape[0])):
-            filename = os.path.splitext(frame["fname"][idx])[0] + '.pkl'
-            file_path = os.path.join(config.data_dir, filename)
-            record_data = load_data(file_path)
-            label_idx = frame["label_idx"][idx]
-
-            if len(record_data) < win_size:
-                record_data = np.pad(record_data, (0, win_size - len(record_data)), "constant")
-
-            wins_data = []
-            for j in range(0, len(record_data)-win_size+1, stride):
-                win_data = record_data[j : j+win_size]
-
-                maxamp = np.max(np.abs(win_data))
-                if maxamp < 0.005 and j > 1:
-                    continue
-                wins_data.append(win_data)
-
-            # print(file_path, len(record_data)/config.sampling_rate, len(wins_data))
-
-            if len(wins_data) == 0:
-                print(file_path)
-
-            wins_data = np.array(wins_data)
-
-            wins_data = wins_data[:, np.newaxis, :]
-
-            data = torch.from_numpy(wins_data).type(torch.FloatTensor)
-
-            label = torch.LongTensor([label_idx])
-
-            if config.cuda:
-                data, label = data.cuda(), label.cuda()
-
-            output = model(data)
-            output = torch.sum(output, dim=0, keepdim=True)
-            #
-            # pred = output.data.max(1, keepdim=True)[1]
-            #
-            # correct += pred.eq(label.data.view_as(pred)).sum()
-
-            prec1, prec3 = accuracy(output, label, topk=(1, 3))
-            top1.update(prec1[0], data.size(0))
-            top3.update(prec3[0], data.size(0))
-
-
-        elapse = time.strftime('%Mm:%Ss', time.gmtime(time.time() - start))
-
-        logging.info(' Test on file: Prec@1 {top1.avg:.3f} Prec@3 {top3.avg:.3f} Time: {elapse}'
-              .format(top1=top1, top3=top3, elapse=elapse))
-        # return top1.avg, top3.avg
-
-
-def val_on_file_logmel(model, config, frame):
-    # switch to evaluate mode
-    model.eval()
-
-    top1 = AverageMeter()
-    top3 = AverageMeter()
-
-    start = time.time()
-
-    input_frame_length = int(config.audio_duration * 1000 / config.frame_shift)
-    stride = 20
-
-    with torch.no_grad():
-
-        for idx in tqdm(range(frame.shape[0])):
-            filename = os.path.splitext(frame["fname"][idx])[0] + '.pkl'
-            file_path = os.path.join(config.data_dir, filename)
-            logmel = load_data(file_path)
-            label_idx = frame["label_idx"][idx]
-
-
-            if logmel.shape[2] < input_frame_length:
-                logmel = np.pad(logmel, ((0, 0), (0, 0), (0, input_frame_length - logmel.shape[2])), "constant")
-
-            wins_data = []
-            for j in range(0, logmel.shape[2] - input_frame_length + 1, stride):
-                win_data = logmel[:, :, j: j + input_frame_length]
-
-                # maxamp = np.max(np.abs(win_data))
-                # if maxamp < 0.005 and j > 1:
-                #     continue
-                wins_data.append(win_data)
-
-            # print(file_path, logmel.shape[1], input_frame_length)
-
-            if len(wins_data) == 0:
-                print(file_path)
-
-            wins_data = np.array(wins_data)
-
-            data = torch.from_numpy(wins_data).type(torch.FloatTensor)
-            label = torch.LongTensor([label_idx])
-
-            if config.cuda:
-                data, label = data.cuda(), label.cuda()
-
-            output = model(data)
-            output = torch.sum(output, dim=0, keepdim=True)
-
-            prec1, prec3 = accuracy(output, label, topk=(1, 3))
-            top1.update(prec1[0], data.size(0))
-            top3.update(prec3[0], data.size(0))
-
-        elapse = time.strftime('%Mm:%Ss', time.gmtime(time.time() - start))
-
-        # logging.info(' Test acc {test_acc} Time: {elapse}'
-        #              .format(test_acc=test_acc, elapse=elapse))
-        logging.info(' Test on file: Prec@1 {top1.avg:.3f} Prec@3 {top3.avg:.3f} Time: {elapse}'
-              .format(top1=top1, top3=top3, elapse=elapse))
-
-        # return top1.avg, to
 
 
 def mixup(data, one_hot_labels, alpha=1):

@@ -1,4 +1,8 @@
-import numpy as np
+"""
+set parameters by instantiating Config
+
+"""
+
 
 class Config(object):
     def __init__(self,

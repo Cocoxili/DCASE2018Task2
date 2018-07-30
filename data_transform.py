@@ -1,7 +1,6 @@
 
 from util import *
 import os
-import random
 import numpy as np
 import pandas as pd
 from multiprocessing import Pool
@@ -25,43 +24,19 @@ def get_wavelist():
     df.to_csv('./wavelist.csv')
 
 
-# def wav_to_pickle(wavelist):
-#     sr = 22050
-#
-#     df = pd.read_csv(wavelist)
-#     # print(df)
-#     for idx, item in df.iterrows():
-#         # print(item['fname'])
-#         if item['train0/test1'] == 0:
-#             file_path = os.path.join('../audio_train/', item['fname'])
-#         elif item['train0/test1'] == 1:
-#             file_path = os.path.join('../audio_test/', item['fname'])
-#
-#         print(idx, file_path)
-#         data, _ = librosa.core.load(file_path, sr=sr, res_type='kaiser_best')
-#         p_name = os.path.join('../data-22050', os.path.splitext(item['fname'])[0] + '.pkl')
-#         # print(p_name)
-#         save_data(p_name, data)
-
-
 def wav_to_pickle(wavelist):
-
     df = pd.read_csv(wavelist)
-    # print(df)
     pool = Pool(10)
     pool.map(tsfm_wave, df.iterrows())
 
 
 def wav_to_logmel(wavelist):
-
     df = pd.read_csv(wavelist)
-    # print(df)
     pool = Pool(10)
     pool.map(tsfm_logmel, df.iterrows())
 
 
 def wav_to_mfcc(wavelist):
-
     df = pd.read_csv(wavelist)
     pool = Pool(10)
     pool.map(tsfm_mfcc, df.iterrows())
@@ -81,7 +56,6 @@ def tsfm_wave(row):
     save_data(p_name, data)
 
 
-
 def tsfm_logmel(row):
 
     item = row[1]
@@ -92,10 +66,9 @@ def tsfm_logmel(row):
         elif item['train0/test1'] == 1:
             file_path = os.path.join('../audio_test/', item['fname'])
 
-
         data, sr = librosa.load(file_path, config.sampling_rate)
 
-        # 一些音频是空的,将logmel填0
+        # some audio file is empty, fill logmel with 0.
         if len(data) == 0:
             print("empty file:", file_path)
             logmel = np.zeros((config.n_mels, 150))
@@ -112,7 +85,6 @@ def tsfm_logmel(row):
 
             feats = np.stack((logmel, delta, accelerate)) #(3, 64, xx)
 
-            # logmel = logmel[np.newaxis, :, :]
         save_data(p_name, feats)
 
 
@@ -128,10 +100,9 @@ def tsfm_mfcc(row):
         elif item['train0/test1'] == 1:
             file_path = os.path.join('../audio_test/', item['fname'])
 
-
         data, sr = librosa.load(file_path, config.sampling_rate)
 
-        # 一些音频是空的,填0
+        # some audio file is empty, fill logmel with 0.
         if len(data) == 0:
             print("empty file:", file_path)
             mfcc = np.zeros((config.n_mels, 150))
@@ -149,13 +120,12 @@ def tsfm_mfcc(row):
         save_data(p_name, feats)
 
 
-
-
 if __name__ == '__main__':
-    # make_dirs()
+    make_dirs()
     config = Config(sampling_rate=22050, n_mels=64, frame_weigth=80, frame_shift=10)
     # config2 = Config(sampling_rate=None, n_mels=64, frame_weigth=40, frame_shift=10)
-    # get_wavelist()
+    get_wavelist()
+    # what kind of feature to extract? wave, logmel or MFCC?
     # wav_to_pickle('wavelist.csv')
-    wav_to_logmel('wavelist.csv')
+    # wav_to_logmel('wavelist.csv')
     # wav_to_mfcc('wavelist.csv')

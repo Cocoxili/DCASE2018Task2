@@ -1,10 +1,7 @@
-
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torchvision import models
 import torch.utils.model_zoo as model_zoo
 from pretrainedmodels.models.xception import Xception
+
 
 pretrained_settings = {
     'xception': {
@@ -20,6 +17,7 @@ pretrained_settings = {
         }
     }
 }
+
 
 def xception_(num_classes=41, pretrained='imagenet'):
     model = Xception(num_classes=num_classes)

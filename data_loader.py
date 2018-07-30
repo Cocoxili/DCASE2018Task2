@@ -1,7 +1,4 @@
 import numpy as np
-
-import librosa
-import os
 import pandas as pd
 from config import Config
 from util import *
@@ -11,29 +8,17 @@ from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
-import time
+
 
 class Freesound(Dataset):
     def __init__(self, config, frame, mode, transform=None):
         self.config = config
         self.frame = frame
-        # dict for mapping class names into indices. can be obtained by
-        # {cls_name:i for i, cls_name in enumerate(csv_file["label"].unique())}
-        # self.classes = {'Acoustic_guitar': 38, 'Applause': 37, 'Bark': 19, 'Bass_drum': 21, 'Burping_or_eructation': 28,
-        #                 'Bus': 22, 'Cello': 4, 'Chime': 20, 'Clarinet': 7, 'Computer_keyboard': 8, 'Cough': 17,
-        #                 'Cowbell': 33, 'Double_bass': 29, 'Drawer_open_or_close': 36, 'Electric_piano': 34, 'Fart': 14,
-        #                 'Finger_snapping': 40, 'Fireworks': 31, 'Flute': 16, 'Glockenspiel': 3, 'Gong': 26,
-        #                 'Gunshot_or_gunfire': 6, 'Harmonica': 25, 'Hi-hat': 0, 'Keys_jangling': 9, 'Knock': 5,
-        #                 'Laughter': 12, 'Meow': 35, 'Microwave_oven': 27, 'Oboe': 15, 'Saxophone': 1, 'Scissors': 24,
-        #                 'Shatter': 30, 'Snare_drum': 10, 'Squeak': 23, 'Tambourine': 32, 'Tearing': 13, 'Telephone': 18,
-        #                 'Trumpet': 2, 'Violin_or_fiddle': 39, 'Writing': 11}
-
         self.transform = transform
         self.mode = mode
 
     def __len__(self):
         return self.frame.shape[0]
-
 
     def __getitem__(self, idx):
 
@@ -55,7 +40,6 @@ class Freesound(Dataset):
             return data, label_idx
         if self.mode is "test":
             return data
-
 
     def _random_selection(self, file_path):
 
@@ -130,9 +114,8 @@ class Freesound_logmel(Dataset):
 
 
 class ToTensor(object):
-    """#{{{
+    """
     convert ndarrays in sample to Tensors.
-„
     return:
         feat(torch.FloatTensor)
         label(torch.LongTensor of size batch_size x 1)
@@ -183,9 +166,6 @@ if __name__ == "__main__":
         val_set = val_set.reset_index(drop=True)
         print(len(train_set), len(val_set))
 
-        print(train_set)
-        train_set_verified = train_set.loc[train_set['manually_verified']==1]
-        print(train_set_verified)
         trainSet = Freesound_logmel(config=config, frame=train_set,
                              transform=transforms.Compose([ToTensor()]),
                              mode="train")
