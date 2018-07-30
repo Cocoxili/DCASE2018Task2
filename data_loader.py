@@ -184,6 +184,8 @@ if __name__ == "__main__":
         print(len(train_set), len(val_set))
 
         print(train_set)
+        train_set_verified = train_set.loc[train_set['manually_verified']==1]
+        print(train_set_verified)
         trainSet = Freesound_logmel(config=config, frame=train_set,
                              transform=transforms.Compose([ToTensor()]),
                              mode="train")
@@ -215,3 +217,4 @@ if __name__ == "__main__":
     #
     #     print(input.type())
     #     break
+

@@ -327,37 +327,38 @@ def test():
 
 if __name__ == "__main__":
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = "3"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "2"
 
-    config = Config(sampling_rate=22050,
-                   audio_duration=1.5,
-                   batch_size=128,
-                   n_folds=5,
-                   data_dir="../logmel+delta_w80_s10_m64",
-                   model_dir='../model/mixup_logmel_delta_dpn107',
-                   prediction_dir='../prediction/mixup_logmel_delta_dpn107',
-                   arch='dpn107_',
-                   lr=0.01,
-                   pretrain='imagenet+5k',
-                   epochs=100)
+    #  config = Config(sampling_rate=22050,
+                   #  audio_duration=1.5,
+                   #  batch_size=128,
+                   #  n_folds=5,
+                   #  data_dir="../logmel+delta_w80_s10_m64",
+                   #  model_dir='../model/mixup_logmel_delta_resnext101_32x4d_nopretrained',
+                   #  prediction_dir='../prediction/mixup_logmel_delta_resnext101_32x4d_nopretrained',
+                   #  arch='resnext101_32x4d_',
+                   #  lr=0.01,
+                   #  pretrain=None,
+                   #  epochs=100)
 
-    #  config = Config(debug=False,
-                    #  n_folds=5,
-                    #  sampling_rate=44100,
-                    #  audio_duration=1.5,
-                    #  batch_size=16,
-                    #  data_dir="../data-44100",
-                    #  arch='waveResnet101',
-                    #  model_dir='../model/mixup_waveResnet101_adam',
-                    #  prediction_dir='../prediction/mixup_waveResnet101_adam',
-                    #  lr=0.01,
-                    #  pretrain='imagenet',
-                    #  print_freq=60,
-                    #  epochs=50)
+    config = Config(debug=False,
+                    n_folds=5,
+                    sampling_rate=44100,
+                    audio_duration=1.5,
+                    batch_size=16,
+                    data_dir="../data-44100",
+                    arch='waveResnext101_32x4d',
+                    model_dir='../model/waveResnext101_32x4d_nopretrained',
+                    prediction_dir='../prediction/waveResnext101_32x4d_nopretrained',
+                    lr=0.01,
+                    pretrain=None,
+                    print_freq=60,
+                    epochs=50)
 
 
     # test()
-    make_prediction_files(input='logmel', mean_method='arithmetic')
+    #  make_prediction_files(input='logmel', mean_method='arithmetic')
+    make_prediction_files(input='wave', mean_method='arithmetic')
     #  predict()
     #  prediction = ensemble()
     make_a_submission_file()
