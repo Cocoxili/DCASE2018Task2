@@ -1,6 +1,7 @@
 from data_loader import *
 from util import *
 from torch.optim import lr_scheduler
+import time
 
 
 def train_on_fold(model, train_criterion, val_criterion,
