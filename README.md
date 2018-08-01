@@ -39,11 +39,11 @@ torchvision 0.2.1
 ### How to run?
 
 
-#### Feature extraction.
+##### Feature extraction.
 
-~~~
+```
 python data_transform.py
-~~~
+```
 
 This code can extract three types of features by selecting 
 different functions:
@@ -65,7 +65,7 @@ or MFCC with delta and accelerate to form a 3 x 64 x N dimension
 matrix where N depends on the length of audio files.
 
 
-#### Train on Wave.
+##### Train on Wave.
 
 ~~~
 python train_on_wave.py
@@ -79,7 +79,7 @@ epoch...). Make sure the data you are using is the wave
 feature you extracted earlier.
 
 
-#### Train on Log-Mel
+##### Train on Log-Mel
 
 ~~~
 python train_on_logmel.py
@@ -90,7 +90,7 @@ To train the network from log-mel feature.
 Make sure the data you are using is the log-mel feature you 
 extracted earlier.
 
-#### Train on MFCC
+##### Train on MFCC
 
 ~~~
 python train_on_logmel.py
