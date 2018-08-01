@@ -7,9 +7,6 @@ content with AudioSet labels
 [Kaggle](https://www.kaggle.com/c/freesound-audio-tagging) - Freesound General-Purpose Audio Tagging Challenge
 
 
-***
-
-
 ## What you can get from this repository?
 
 1. Framework for audio-tagging or audio classification which based on PyTorch.
