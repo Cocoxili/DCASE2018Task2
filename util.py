@@ -6,14 +6,11 @@ import librosa
 import logging
 import os
 from network import *
-from network_waveResnet import *
-# from network_MTO import *
 from network_senet import *
 from network_resnext import *
 from network_MTOresnext import *
 from network_dpn import *
 from network_xception import *
-from network_inceptionresnetv2 import *
 
 
 def save_data(filename, data):

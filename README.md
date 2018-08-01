@@ -1,4 +1,27 @@
-## freesound-audio-tagging
+## Freesound-audio-tagging
+
+
+[DCASE2018 Task2](http://dcase.community/challenge2018/task-general-purpose-audio-tagging) - General-purpose audio tagging of Freesound 
+content with AudioSet labels
+
+[Kaggle](https://www.kaggle.com/c/freesound-audio-tagging) - Freesound General-Purpose Audio Tagging Challenge
+
+
+### What you can get from this repository?
+
+1. Framework for audio-tagging or audio classification which based on PyTorch.
+
+2. Audio data processing method and feature extraction method.
+
+3. Encapsulation of multiple models for the audio data.
+
+4. Advanced meta-learning method. (updating...)
+
+
+### Data
+
+From Kaggle competition https://www.kaggle.com/c/freesound-audio-tagging/data
+
 
 ### Requirments:
 
@@ -13,35 +36,86 @@ librosa 0.5.1
 torchvision 0.2.1
 
 
-### Data
-
-From Kaggle competition https://www.kaggle.com/c/freesound-audio-tagging/data
+### How to run?
 
 
-### Run:
+#### Feature extraction.
 
-实例化 Config 类, 设置参数.
+~~~
+python data_transform.py
+~~~
 
-data_transform.py 用来转化训练数据.
-例如将.wav文件转换为numpy格式存储,重采样,提取logmel特征,提取MFCC特征等.
+This code can extract three types of features by selecting 
+different functions:
 
-train_on_logmel.py
-利用logmel特征训练. (利用MFCC特征训练也是这个文件,需要更改config中的输入特征,
-data_dir)
+* Wave
+* Log-Mel
+* MFCC
 
-train_on_wave.py
-利用波形特征训练.
-(与train_on_logmel.py的主要区别在于DataLoader类和优化器optimizer的选取)
+**Note:** To extract different features, you need to set 
+different parameters in config.
+
+In order to speed up the extraction process, we use parallel 
+computing, you could modify the number of threads according 
+to your computer situation.
+
+We extract log-mel and MFCC features, the delta and accelerate 
+of log-mel and MFCC are calculated. Then we concatenate log-mel 
+or MFCC with delta and accelerate to form a 3 x 64 x N dimension
+matrix where N depends on the length of audio files.
 
 
-### 一些小问题
+#### Train on Wave.
 
-测试集中有三个文件是空的,处理数据的时候需要注意:
+~~~
+python train_on_wave.py
+~~~
 
-b39975f5.wav
+To train the network directly from waveform.
 
-0b0427e2.wav
+Before run it, you should instantiate Class config to set 
+parameters (such as directory, learning rate, batch size, 
+epoch...). Make sure the data you are using is the wave 
+feature you extracted earlier.
 
-6ea0099f.wav
 
-目前的做法是将数据填0.
+#### Train on Log-Mel
+
+~~~
+python train_on_logmel.py
+~~~
+
+To train the network from log-mel feature.
+
+Make sure the data you are using is the log-mel feature you 
+extracted earlier.
+
+#### Train on MFCC
+
+~~~
+python train_on_logmel.py
+~~~
+
+To train the network from MFCC feature using the same code, but 
+you should use the MFCC feature you extracted earlier.
+
+
+### Single Models
+
+Several deep learning networks are encapsulated for sound data in the network_*.py, including:
+
+* Resnet
+* ResNeXt
+* SE-ResNeXt
+* DPN
+* Xception
+
+Also, you can find useful pretrained models in this [repository](https://github.com/Cadene/pretrained-models.pytorch).
+
+
+
+### To be improved
+
+* More efficient and high-performance models to be designed.
+
+* Currently, the models are trained on single GPU. Multiple GPUs can be used for parallel training to accelerate learning.

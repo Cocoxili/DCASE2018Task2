@@ -84,6 +84,7 @@ pretrained_settings = {
     }
 }
 
+
 def dpn68_(num_classes=41, pretrained='imagenet'):
     model = DPN(
         small=True, num_init_features=10, k_r=128, groups=32,
@@ -106,6 +107,7 @@ def dpn68_(num_classes=41, pretrained='imagenet'):
         model.std = settings['std']
         model.classifier = nn.Conv2d(832, num_classes, kernel_size=1, bias=True)
     return model
+
 
 def dpn98_(num_classes=41, pretrained='imagenet'):
     model = DPN(
