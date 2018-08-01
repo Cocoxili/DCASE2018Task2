@@ -1,4 +1,4 @@
-## Freesound-audio-tagging
+# Freesound-audio-tagging
 
 
 [DCASE2018 Task2](http://dcase.community/challenge2018/task-general-purpose-audio-tagging) - General-purpose audio tagging of Freesound 
@@ -7,7 +7,10 @@ content with AudioSet labels
 [Kaggle](https://www.kaggle.com/c/freesound-audio-tagging) - Freesound General-Purpose Audio Tagging Challenge
 
 
-### What you can get from this repository?
+***
+
+
+## What you can get from this repository?
 
 1. Framework for audio-tagging or audio classification which based on PyTorch.
 
@@ -18,12 +21,12 @@ content with AudioSet labels
 4. Advanced meta-learning method. (updating...)
 
 
-### Data
+## Data
 
 From Kaggle competition https://www.kaggle.com/c/freesound-audio-tagging/data
 
 
-### Requirments:
+## Requirments:
 
 python 3.6
 
@@ -36,10 +39,10 @@ librosa 0.5.1
 torchvision 0.2.1
 
 
-### How to run?
+## How to run?
 
 
-##### Feature extraction.
+#### Feature extraction.
 
 ```
 python data_transform.py
@@ -65,7 +68,7 @@ or MFCC with delta and accelerate to form a 3 x 64 x N dimension
 matrix where N depends on the length of audio files.
 
 
-##### Train on Wave.
+#### Train on Wave.
 
 ~~~
 python train_on_wave.py
@@ -79,7 +82,7 @@ epoch...). Make sure the data you are using is the wave
 feature you extracted earlier.
 
 
-##### Train on Log-Mel
+#### Train on Log-Mel
 
 ~~~
 python train_on_logmel.py
@@ -90,7 +93,7 @@ To train the network from log-mel feature.
 Make sure the data you are using is the log-mel feature you 
 extracted earlier.
 
-##### Train on MFCC
+#### Train on MFCC
 
 ~~~
 python train_on_logmel.py
@@ -100,7 +103,7 @@ To train the network from MFCC feature using the same code, but
 you should use the MFCC feature you extracted earlier.
 
 
-### Single Models
+## Single Models
 
 Several deep learning networks are encapsulated for sound data in the network_*.py, including:
 
@@ -114,7 +117,7 @@ Also, you can find useful pretrained models in this [repository](https://github.
 
 
 
-### To be improved
+## To be improved
 
 * More efficient and high-performance models to be designed.
 
