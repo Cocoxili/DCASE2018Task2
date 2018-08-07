@@ -15,8 +15,6 @@ content with AudioSet labels
 
 3. Encapsulation of multiple models for the audio data.
 
-4. Advanced meta-learning method. (updating...)
-
 
 ## Data
 
