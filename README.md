@@ -6,6 +6,10 @@ content with AudioSet labels
 
 [Kaggle](https://www.kaggle.com/c/freesound-audio-tagging) - Freesound General-Purpose Audio Tagging Challenge
 
+## Citing
+
+The article for this method can be downloaded [here](http://dcase.community/challenge2018/task-general-purpose-audio-tagging-results). Please cite this work in your pulications if helps your research.
+
 
 ## What you can get from this repository?
 
@@ -15,7 +19,7 @@ content with AudioSet labels
 
 3. Encapsulation of multiple models for the audio data.
 
-4. Advanced meta-learning method. (updating...)
+<!-- 4. Advanced meta-learning method. (updating...) -->
 
 
 ## Data
@@ -63,6 +67,8 @@ We extract log-mel and MFCC features, the delta and accelerate
 of log-mel and MFCC are calculated. Then we concatenate log-mel 
 or MFCC with delta and accelerate to form a 3 x 64 x N dimension
 matrix where N depends on the length of audio files.
+
+Before training, you should make directory to save the model.
 
 
 #### Train on Wave.

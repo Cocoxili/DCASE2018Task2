@@ -5,12 +5,7 @@ import pickle
 import librosa
 import logging
 import os
-from network import *
-from network_senet import *
-from network_resnext import *
-from network_MTOresnext import *
-from network_dpn import *
-from network_xception import *
+from networks import *
 
 
 def save_data(filename, data):
@@ -131,8 +126,9 @@ def run_method_by_string(name):
 
 
 def make_dirs():
-    dirs = ['../data-22050', '../prediction', '../log', '../model',
-            '../model', '../submission']
+    dirs = ['../data-44100', '../prediction', '../log', '../model',
+            '../model', '../submission', '../logmel+delta_w80_s10_m64',
+            '../mfcc+delta_w80_s10_m64']
 
     for dir in dirs:
         if not os.path.exists(dir):
