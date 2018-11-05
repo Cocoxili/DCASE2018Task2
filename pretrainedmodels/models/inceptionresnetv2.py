@@ -376,8 +376,4 @@ if __name__ == '__main__':
     print('success')
 
     # fail
-<<<<<<< HEAD
     assert inceptionresnetv2(num_classes=1001, pretrained='imagenet')
-=======
-    assert inceptionresnetv2(num_classes=1001, pretrained='imagenet')
->>>>>>> wave_input
