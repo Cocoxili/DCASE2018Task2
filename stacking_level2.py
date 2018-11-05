@@ -2,7 +2,6 @@
 """
 Created on Mon Nov  5 17:24:05 2018
 
-@author: Administrator
 """
 
 import os
@@ -103,7 +102,7 @@ for i, (train_fold, validate) in enumerate(kf):
     lgb_train = lgb.Dataset(X_train, label_train, feature_name=feature_names, weight=weights_train[train_fold])
     lgb_valid = lgb.Dataset(X_validate, label_validate, feature_name=feature_names, weight=weights_train[validate])
     lgb_test = lgb.Dataset(X_test, feature_name=feature_names,weight=weights_test)
-    
+
     bst = lgb.train(
         params_lgb,
         lgb_train,
@@ -112,11 +111,11 @@ for i, (train_fold, validate) in enumerate(kf):
         early_stopping_rounds=100,
         verbose_eval=50,
     )
-    
+
     best_trees.append(bst.best_iteration)
     #ax = lgb.plot_importance(bst, max_num_features=10, grid=False, height=0.8, figsize=(16, 8))
     #plt.show()
-    
+
     cv_pred_lgb += bst.predict(X_test)
     cv_train_lgb[validate] += bst.predict(X_validate)
     score = accuracy_score(np.argmax(cv_train_lgb[validate],axis= 1),label_validate)
@@ -128,14 +127,4 @@ top_3 = np.argsort(-cv_pred, axis=1)[:, :3]
 predicted_labels = [' '.join(list(le.inverse_transform(x))) for x in top_3]
 submission['label'] = predicted_labels
 submission.to_csv('final_answer.csv',index=False)
-
-
-
-
-
-
-
-
-
-
 
