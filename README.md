@@ -8,23 +8,31 @@ content with AudioSet labels
 
 ## Citing
 
-The article for this method can be downloaded [here](http://dcase.community/challenge2018/task-general-purpose-audio-tagging-results). Please cite this work in your pulications if helps your research.
+The article for this method can be downloaded [**here**](https://arxiv.org/abs/1810.12832). Please cite this work in your pulications if it helps your research.
 
+```
+@article{xu2018general,
+  title={General audio tagging with ensembling convolutional neural network and statistical features},
+  author={Xu, Kele and Zhu, Boqing and Kong, Qiuqiang and Mi, Haibo and Ding, Bo and Wang, Dezhi and Wang, Huaimin},
+  journal={arXiv preprint arXiv:1810.12832},
+  year={2018}
+}
+```
 
 ## What you can get from this repository?
 
-1. Framework for audio-tagging or audio classification which based on PyTorch.
+* Framework for audio-tagging or audio classification which based on PyTorch.
 
-2. Audio data processing method and feature extraction method.
+* Audio data processing method and feature extraction method.
 
-3. Encapsulation of multiple models for the audio data.
+* Encapsulation of multiple models for the audio data.
 
-<!-- 4. Advanced meta-learning method. (updating...) -->
+* Advanced meta-learning method. 
 
 
 ## Data
 
-From Kaggle competition https://www.kaggle.com/c/freesound-audio-tagging/data
+Date could be downloaded from Kaggle competition [Freesound Audio Tagging](https://www.kaggle.com/c/freesound-audio-tagging/data).
 
 
 ## Requirments:
